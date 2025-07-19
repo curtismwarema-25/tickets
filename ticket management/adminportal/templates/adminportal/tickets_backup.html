@@ -1,0 +1,790 @@
+{% extends 'adminportal/base.html' %}
+{% load static %}
+{% load ticket_filters %}
+
+{% block content %}
+
+<!-- Filters Section -->
+<div class="filters-section">
+  <div class="row align-items-center">
+    <div class="col-md-2">
+      <label class=        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectTicketModal">Reject</button>
+          <button type="submit" class="btn btn-success">Approve Ticket</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Reject Ticket Modal -->
+<div class="modal fade" id="rejectTicketModal" tabindex="-1" aria-labelledby="rejectTicketModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{% url 'adminportal:reject_ticket' %}" id="reject-ticket-form">
+        {% csrf_token %}
+        <input type="hidden" name="ticket_id" id="reject-ticket-id">
+        <div class="modal-header">
+          <h5 class="modal-title">Reject Ticket</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-3">Are you sure you want to reject ticket "<span id="reject-ticket-title" class="fw-medium"></span>"?</p>
+          <div class="mb-3">
+            <label for="rejection-reason" class="form-label">Reason for Rejection <span class="text-danger">*</span></label>
+            <textarea name="rejection_reason" id="rejection-reason" class="form-control" rows="3" required 
+              placeholder="Please provide a reason for rejecting this ticket..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger">Confirm Rejection</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- View Ticket Modal -->l mb-1"><i class="bi bi-funnel-fill me-1"></i>Filters:</label>
+    </div>
+    <div class="col-md-8">
+      <form method="GET" class="d-flex gap-3">
+        <select name="status" class="form-select filter-dropdown">
+          <option value="">All Status</option>
+          <option value="pending" {% if request.GET.status == "pending" %}selected{% endif %}>Pending</option>
+          <option value="pending_approval" {% if request.GET.status == "pending_approval" %}selected{% endif %}>Pending Approval</option>
+          <option value="completed" {% if request.GET.status == "completed" %}selected{% endif %}>Completed</option>
+          <option value="rejected" {% if request.GET.status == "rejected" %}selected{% endif %}>Rejected</option>
+        </select>
+        
+        <select name="priority" class="form-select filter-dropdown">
+          <option value="">All Priority</option>
+          <option value="high" {% if request.GET.priority == "high" %}selected{% endif %}>High</option>
+          <option value="medium" {% if request.GET.priority == "medium" %}selected{% endif %}>Medium</option>
+          <option value="low" {% if request.GET.priority == "low" %}selected{% endif %}>Low</option>
+        </select>
+        
+        <select name="technician" class="form-select filter-dropdown">
+          <option value="">All Assignees</option>
+          {% for tech in technicians %}
+          <option value="{{ tech.id }}" {% if request.GET.technician == tech.id|stringformat:"s" %}selected{% endif %}>
+            {{ tech.username }}
+          </option>
+          {% endfor %}
+        </select>
+        
+        <button type="submit" class="btn btn-outline-primary">Apply</button>
+        <a href="{% url 'adminportal:tickets' %}" class="btn btn-outline-secondary">Clear</a>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Header Section -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="fw-bold mb-1">All Tickets</h4>
+    <p class="text-muted mb-0">{{ tickets|length }} ticket{{ tickets|length|pluralize }} found</p>
+  </div>
+  <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTicketModal">
+    <i class="bi bi-plus-lg me-1"></i> Create Ticket
+  </button>
+</div>
+
+<!-- Tickets Grid -->
+<div class="row g-4">
+  {% for ticket in tickets %}
+  <div class="col-12 col-md-6 col-lg-4 d-flex align-items-stretch">
+    <div class="card h-100 shadow-sm border-0 position-relative ticket-card status-{{ ticket.status }} priority-{{ ticket.priority }}" style="min-height: 220px; max-width: 370px; width: 100%;">
+      <div class="card-body p-3">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <div>
+            <h5 class="fw-bold mb-1 text-truncate" style="max-width: 220px;">{{ ticket.title }}</h5>
+            <p class="mb-2 text-muted text-truncate" style="max-width: 220px;">{{ ticket.description }}</p>
+          </div>
+          <div>
+            {% if ticket.status == 'pending_approval' %}
+              <span class="badge rounded-pill bg-warning text-dark">Pending Approval</span>
+            {% elif ticket.status == 'completed' %}
+              <span class="badge rounded-pill bg-success">Completed</span>
+            {% elif ticket.status == 'pending' %}
+              <span class="badge rounded-pill bg-info text-dark">Pending</span>
+            {% elif ticket.status == 'rejected' %}
+              <span class="badge rounded-pill bg-danger">Rejected</span>
+            {% else %}
+              <span class="badge rounded-pill bg-light text-dark">{{ ticket.status|capfirst }}</span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="d-flex align-items-center mb-2">
+          <div class="me-2">
+            <span class="avatar bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width:32px;height:32px;font-weight:600;">
+              {% if ticket.technician %}
+                {{ ticket.technician.username|first|upper }}
+              {% else %}
+                ?
+              {% endif %}
+            </span>
+          </div>
+          <div class="small text-muted">
+            {% if ticket.technician %}
+              Assigned to {{ ticket.technician.username }}
+            {% else %}
+              Unassigned
+            {% endif %}
+          </div>
+        </div>
+        <div class="d-flex flex-wrap gap-3 mb-2">
+          <div class="small text-muted"><i class="bi bi-person me-1"></i>{{ ticket.creator.username }}</div>
+          <div class="small text-muted"><i class="bi bi-calendar me-1"></i>{{ ticket.created_at|date:"d/m/Y" }}</div>
+        </div>
+        <div class="d-flex flex-wrap gap-3 mb-2">
+          {% if ticket.deadline %}
+            <div class="small text-muted"><i class="bi bi-clock me-1"></i>
+              {% now "Y-m-d H:i" as current_time %}
+              {% if ticket.deadline|date:"Y-m-d H:i" < current_time %}
+                <span class="text-danger fw-bold">Overdue by {{ ticket.deadline|timesince }}</span>
+              {% else %}
+                Due {{ ticket.deadline|date:"d/m/Y" }}
+              {% endif %}
+            </div>
+          {% else %}
+            <div class="small text-muted">No deadline</div>
+          {% endif %}
+          <div>
+            <span class="badge rounded-pill bg-{{ ticket.priority|priority_color }} text-uppercase">{{ ticket.priority }}</span>
+          </div>
+        </div>
+        <div class="d-flex gap-2 mt-3">
+          <button type="button"
+            class="btn btn-outline-primary btn-sm view-ticket"
+            data-bs-toggle="modal"
+            data-bs-target="#viewTicketModal"
+            data-id="{{ ticket.id }}"
+            data-title="{{ ticket.title }}"
+            data-description="{{ ticket.description }}"
+            data-creator="{{ ticket.creator.username }}"
+            data-client="{{ ticket.client.name }}"
+            data-technician="{{ ticket.technician.username|default:'Unassigned' }}"
+            data-priority="{{ ticket.priority }}"
+            data-deadline="{{ ticket.deadline|date:'Y-m-d H:i' }}"
+            data-status="{{ ticket.status }}"
+            data-created="{{ ticket.created_at|date:'Y-m-d H:i' }}">
+            <i class="bi bi-eye me-1"></i>View
+          </button>
+          <button type="button"
+            class="btn btn-outline-secondary btn-sm"
+            data-bs-toggle="modal"
+            data-bs-target="#editTicketModal"
+            data-id="{{ ticket.id }}"
+            data-title="{{ ticket.title }}"
+            data-description="{{ ticket.description }}"
+            data-priority="{{ ticket.priority }}"
+            data-status="{{ ticket.status }}"
+            data-deadline="{{ ticket.deadline|date:'Y-m-d\\TH:i' }}"
+            data-technician="{{ ticket.technician.id|default:'' }}"
+            data-client-id="{{ ticket.client.id }}"
+            data-client-name="{{ ticket.client.name }}">
+            <i class="bi bi-pencil me-1"></i>Edit
+          </button>
+          {% if ticket.status == 'pending_approval' %}
+            <button type="button"
+              class="btn btn-outline-success btn-sm"
+              data-bs-toggle="modal"
+              data-bs-target="#approveTicketModal"
+              data-id="{{ ticket.id }}"
+              data-title="{{ ticket.title }}"
+              data-description="{{ ticket.description }}"
+              data-creator="{{ ticket.creator.username }}"
+              data-technician="{{ ticket.technician.username|default:'Unassigned' }}"
+              data-priority="{{ ticket.priority }}"
+              data-deadline="{{ ticket.deadline|date:'Y-m-d H:i' }}"
+              data-client="{{ ticket.client.name }}"
+              data-created="{{ ticket.created_at|date:'Y-m-d H:i' }}"
+              data-status="{{ ticket.status }}">
+              <i class="bi bi-check-circle me-1"></i>Review
+            </button>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="col-12">
+    <div class="text-center py-5">
+      <i class="bi bi-ticket-perforated display-1 text-muted"></i>
+      <h5 class="text-muted mt-3">No tickets found</h5>
+      <p class="text-muted">Create a new ticket to get started</p>
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTicketModal">
+        <i class="bi bi-plus-lg me-1"></i> Create Ticket
+      </button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- All the existing modals remain the same -->
+<!-- Approve Ticket Modal -->
+<div class="modal fade" id="approveTicketModal" tabindex="-1" aria-labelledby="approveTicketModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form method="POST" action="{% url 'adminportal:approve_ticket' 0 %}" enctype="multipart/form-data" id="approve-ticket-form">
+        {% csrf_token %}
+        <input type="hidden" name="ticket_id" id="approve-ticket-id">
+        <div class="modal-header">
+          <h5 class="modal-title">Review & Approve Ticket</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Title</label>
+            <input type="text" class="form-control" id="approve-title" readonly>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Creator</label>
+            <input type="text" class="form-control" id="approve-creator" readonly>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Client</label>
+            <input type="text" class="form-control" id="approve-client" readonly>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Technician</label>
+            <input type="text" class="form-control" id="approve-technician" readonly>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Priority</label>
+            <input type="text" class="form-control" id="approve-priority" readonly>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Deadline</label>
+            <input type="text" class="form-control" id="approve-deadline" readonly>
+          </div>
+          <div class="col-md-12">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" id="approve-description" rows="3" readonly></textarea>
+          </div>
+
+          <!-- Required Fields -->
+          <div class="col-md-12">
+            <label class="form-label">Issue Description</label>
+            <textarea name="issue_description" class="form-control" rows="3" required></textarea>
+          </div>
+          <div class="col-md-12">
+            <label class="form-label">Solution</label>
+            <textarea name="solution" class="form-control" rows="3" required></textarea>
+          </div>
+          <div class="col-md-12">
+            <label class="form-label">Sign-off Attachment (Optional)</label>
+            <input type="file" name="signoff_attachment" class="form-control">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-success">Approve Ticket</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Create Ticket Modal -->
+<div class="modal fade" id="createTicketModal" tabindex="-1" aria-labelledby="createTicketModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form method="POST" action="{% url 'adminportal:create_ticket' %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="createTicketModalLabel">Create New Ticket</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body row g-3">
+          <div class="col-md-6">
+            <label for="title" class="form-label">Title</label>
+            <input type="text" name="title" id="title" class="form-control" required>
+          </div>
+          <div class="col-md-6">
+            <label for="deadline" class="form-label">Deadline</label>
+            <input type="datetime-local" name="deadline" id="deadline" class="form-control">
+          </div>
+          <div class="col-12">
+            <label for="description" class="form-label">Description</label>
+            <textarea name="description" id="description" class="form-control" rows="3" required></textarea>
+          </div>
+          <div class="col-md-4">
+            <label for="priority" class="form-label">Priority</label>
+            <select name="priority" id="priority" class="form-select" required>
+              <option value="high">High</option>
+              <option value="medium" selected>Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label for="status" class="form-label">Status</label>
+            <select name="status" id="status" class="form-select" required>
+              <option value="pending">Pending</option>
+              <option value="pending_approval">Pending Approval</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label for="client" class="form-label">Client</label>
+            <select name="client" id="client" class="form-select" required>
+              {% for client in clients %}
+              <option value="{{ client.id }}">{{ client.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label for="technician" class="form-label">Technician</label>
+            <select name="technician" id="technician" class="form-select">
+              <option value="">-- Unassigned --</option>
+              {% for tech in technicians %}
+              <option value="{{ tech.id }}">{{ tech.username }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Ticket</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Ticket Modal -->
+<div class="modal fade" id="editTicketModal" tabindex="-1" aria-labelledby="editTicketModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form method="POST" action="{% url 'adminportal:edit_ticket' %}">
+        {% csrf_token %}
+        <input type="hidden" name="ticket_id" id="edit-ticket-id">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Ticket</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body row g-3">
+          <div class="col-md-6">
+            <label for="edit-title" class="form-label">Title</label>
+            <input type="text" name="title" id="edit-title" class="form-control" readonly>
+          </div>
+          <div class="col-md-6">
+            <label for="edit-deadline" class="form-label">Deadline</label>
+            <input type="datetime-local" name="deadline" id="edit-deadline" class="form-control" readonly>
+          </div>
+          <div class="col-12">
+            <label for="edit-description" class="form-label">Description</label>
+            <textarea name="description" id="edit-description" class="form-control" rows="3" readonly></textarea>
+          </div>
+          <div class="col-md-4">
+            <label for="edit-priority" class="form-label fw-bold">Priority</label>
+            <select name="priority" id="edit-priority" class="form-select" required>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label for="edit-status" class="form-label">Status</label>
+            <input type="text" name="status" id="edit-status" class="form-control" readonly>
+          </div>
+          <div class="col-md-4">
+            <label for="edit-client" class="form-label">Client</label>
+            <input type="text" name="client_display" id="edit-client-display" class="form-control" readonly>
+            <input type="hidden" name="client" id="edit-client">
+          </div>
+          <div class="col-md-6">
+            <label for="edit-technician" class="form-label fw-bold">Technician</label>
+            <select name="technician" id="edit-technician" class="form-select">
+              <option value="">-- Unassigned --</option>
+              {% for tech in technicians %}
+                <option value="{{ tech.id }}">{{ tech.username }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- View Ticket Modal -->
+<div class="modal fade" id="viewTicketModal" tabindex="-1" aria-labelledby="viewTicketModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Ticket Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Basic Information -->
+        <div class="mb-4">
+          <h6 class="mb-3">Basic Information</h6>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="mb-1">
+                <label class="form-label text-muted">Title</label>
+                <div id="view-title" class="fw-medium"></div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-1">
+                <label class="form-label text-muted">Status</label>
+                <div id="view-status" class="fw-medium"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- People -->
+        <div class="mb-4">
+          <h6 class="mb-3">People</h6>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="mb-1">
+                <label class="form-label text-muted">Client</label>
+                <div id="view-client" class="fw-medium"></div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-1">
+                <label class="form-label text-muted">Creator</label>
+                <div id="view-creator" class="fw-medium"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Time Information -->
+        <div class="mb-4">
+          <h6 class="mb-3">Time Information</h6>
+          <div class="mb-1">
+            <label class="form-label text-muted">Deadline</label>
+            <div id="view-deadline" class="fw-medium"></div>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div>
+          <h6 class="mb-3">Description</h6>
+          <div id="view-description" class="fw-medium"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('editTicketModal');
+    modal.addEventListener('show.bs.modal', function (event) {
+      const button = event.relatedTarget;
+
+      document.getElementById('edit-ticket-id').value = button.getAttribute('data-id');
+      document.getElementById('edit-title').value = button.getAttribute('data-title');
+      document.getElementById('edit-description').value = button.getAttribute('data-description');
+      document.getElementById('edit-priority').value = button.getAttribute('data-priority');
+      document.getElementById('edit-status').value = button.getAttribute('data-status');
+      document.getElementById('edit-deadline').value = button.getAttribute('data-deadline');
+      document.getElementById('edit-technician').value = button.getAttribute('data-technician');
+      document.getElementById('edit-client').value = button.getAttribute('data-client');
+      document.getElementById('edit-issue-description').value = button.getAttribute('data-issue');
+      document.getElementById('edit-solution').value = button.getAttribute('data-solution');
+      document.getElementById('edit-signoff-attachment').value = button.getAttribute('data-signoff');
+    });
+  });
+
+
+  
+//ticket modal
+//prefill data 
+document.addEventListener('DOMContentLoaded', () => {
+  const modal = document.getElementById('editTicketModal');
+  modal.addEventListener('show.bs.modal', function (event) {
+    const button = event.relatedTarget;
+
+    document.getElementById('edit-ticket-id').value = button.getAttribute('data-id');
+    document.getElementById('edit-title').value = button.getAttribute('data-title');
+    document.getElementById('edit-description').value = button.getAttribute('data-description');
+    document.getElementById('edit-priority').value = button.getAttribute('data-priority');
+    document.getElementById('edit-status').value = button.getAttribute('data-status');
+    document.getElementById('edit-deadline').value = button.getAttribute('data-deadline');
+    document.getElementById('edit-technician').value = button.getAttribute('data-technician');
+    document.getElementById('edit-client').value = button.getAttribute('data-client');
+    document.getElementById('edit-issue-description').value = button.getAttribute('data-issue');
+    document.getElementById('edit-solution').value = button.getAttribute('data-solution');
+    document.getElementById('edit-signoff-attachment').value = button.getAttribute('data-signoff');
+  });
+});
+
+
+document.addEventListener('DOMContentLoaded', function () {
+  const clearBtn = document.getElementById('clear-filters-btn');
+  const filterModal = document.getElementById('filterTicketModal');
+
+  if (clearBtn && filterModal) {
+    clearBtn.addEventListener('click', function () {
+      const inputs = filterModal.querySelectorAll('input, select, textarea');
+      inputs.forEach(input => {
+        if (input.tagName === 'SELECT') {
+          input.selectedIndex = 0;  // reset to first option
+        } else {
+          input.value = '';
+        }
+      });
+    });
+  }
+});
+
+
+//tootip
+  document.addEventListener('DOMContentLoaded', function () {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'))
+    tooltipTriggerList.forEach(function (el) {
+      new bootstrap.Tooltip(el)
+    });
+  });
+
+// Handle Approve and Reject Modals
+document.addEventListener('DOMContentLoaded', function () {
+  const approveModal = document.getElementById('approveTicketModal');
+  const rejectModal = document.getElementById('rejectTicketModal');
+  let currentTicketId = '';
+  let currentTicketTitle = '';
+
+  if (approveModal) {
+    approveModal.addEventListener('show.bs.modal', function (event) {
+      const button = event.relatedTarget;
+      const form = document.getElementById('approve-ticket-form');
+
+      // Store current ticket info
+      currentTicketId = button.getAttribute('data-id');
+      currentTicketTitle = button.getAttribute('data-title');
+
+      // Update approve form
+      form.action = form.action.replace(/\/\d+\/?$/, `/${currentTicketId}/`);
+      document.getElementById('approve-ticket-id').value = currentTicketId;
+
+      // Fill in approval modal fields
+      document.getElementById('approve-title').value = button.getAttribute('data-title');
+      document.getElementById('approve-description').value = button.getAttribute('data-description');
+      document.getElementById('approve-creator').value = button.getAttribute('data-creator');
+      document.getElementById('approve-technician').value = button.getAttribute('data-technician');
+      document.getElementById('approve-priority').value = button.getAttribute('data-priority');
+      document.getElementById('approve-deadline').value = button.getAttribute('data-deadline');
+      document.getElementById('approve-client').value = button.getAttribute('data-client');
+    });
+  }
+
+  if (rejectModal) {
+    // Set up rejection modal when it opens
+    rejectModal.addEventListener('show.bs.modal', function() {
+      document.getElementById('reject-ticket-id').value = currentTicketId;
+      document.getElementById('reject-ticket-title').textContent = currentTicketTitle;
+      
+      // Clear any previous rejection reason
+      document.getElementById('rejection-reason').value = '';
+
+      // Close approve modal
+      const approveModalInstance = bootstrap.Modal.getInstance(approveModal);
+      if (approveModalInstance) {
+        approveModalInstance.hide();
+      }
+    });
+
+    // Validate rejection form before submission
+    document.getElementById('reject-ticket-form').addEventListener('submit', function(e) {
+      const reason = document.getElementById('rejection-reason').value.trim();
+      if (!reason) {
+        e.preventDefault();
+        alert('Please provide a reason for rejecting the ticket.');
+        return false;
+      }
+    });
+  }
+});
+
+
+
+//on id click
+document.addEventListener('DOMContentLoaded', function () {
+  // Handle view ticket modal population
+  document.querySelectorAll('.view-ticket').forEach(link => {
+    link.addEventListener('click', function () {
+      // Set text content for all view fields
+      document.getElementById('view-title').textContent = this.dataset.title;
+      document.getElementById('view-status').textContent = this.dataset.status.replace(/_/g, ' ').charAt(0).toUpperCase() + 
+        this.dataset.status.slice(1).replace(/_/g, ' ');
+      document.getElementById('view-description').textContent = this.dataset.description;
+      document.getElementById('view-creator').textContent = this.dataset.creator;
+      document.getElementById('view-client').textContent = this.dataset.client;
+      document.getElementById('view-deadline').textContent = this.dataset.deadline;
+    });
+  });
+
+  // Enable Editing
+  editBtn.addEventListener('click', function () {
+    editFields.forEach(field => {
+      if (field.tagName === 'SELECT') {
+        field.removeAttribute('disabled');
+        field.removeAttribute('readonly');
+      } else {
+        field.removeAttribute('readonly');
+      }
+    });
+    document.getElementById('edit-buttons').classList.remove('d-none');
+  });
+
+  // Handle Delete
+  deleteBtn.addEventListener('click', function () {
+    const ticketId = document.getElementById('view-ticket-id').value;
+    if (confirm(`Are you sure you want to delete ticket #${ticketId}?`)) {
+      // Send to your delete endpoint, e.g.:
+      window.location.href = `/admin/tickets/delete/${ticketId}/`;
+    }
+  });
+});
+
+
+// FIXED BULK ACTIONS SCRIPT - Single consolidated event handler
+document.addEventListener('DOMContentLoaded', function () {
+  const selectAllCheckbox = document.getElementById('select-all');
+  const ticketCheckboxes = document.querySelectorAll('.ticket-checkbox');
+  const bulkActionsDiv = document.getElementById('bulk-actions');
+  const bulkEditBtn = document.getElementById('bulk-edit-btn');
+  const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
+
+  function updateBulkActions() {
+    const selected = document.querySelectorAll('.ticket-checkbox:checked');
+    const count = selected.length;
+
+    if (count === 0) {
+      // Hide everything when nothing is selected
+      bulkActionsDiv.style.display = 'none';
+      bulkEditBtn.style.display = 'none';
+      bulkDeleteBtn.style.display = 'none';
+    } else {
+      // Show bulk actions div when tickets are selected
+      bulkActionsDiv.style.display = 'flex';
+      
+      // Show "Edit Selected" only when exactly one ticket is selected
+      if (count === 1) {
+        bulkEditBtn.style.display = 'inline-block';
+      } else {
+        bulkEditBtn.style.display = 'none';
+      }
+      
+      // Show "Delete Selected" when any tickets are selected
+      bulkDeleteBtn.style.display = 'inline-block';
+    }
+  }
+
+  // Reset all checkboxes on page load
+  ticketCheckboxes.forEach(cb => cb.checked = false);
+  if (selectAllCheckbox) selectAllCheckbox.checked = false;
+
+  // Initialize bulk action visibility (should be hidden)
+  updateBulkActions();
+
+  // Handle "Select All" checkbox changes
+  selectAllCheckbox.addEventListener('change', function () {
+    ticketCheckboxes.forEach(cb => cb.checked = this.checked);
+    updateBulkActions();
+  });
+
+  // Handle individual checkbox changes
+  ticketCheckboxes.forEach(cb => {
+    cb.addEventListener('change', function() {
+      // Update bulk actions immediately
+      updateBulkActions();
+      
+      // Update "Select All" checkbox state
+      const totalCheckboxes = ticketCheckboxes.length;
+      const checkedCheckboxes = document.querySelectorAll('.ticket-checkbox:checked').length;
+      
+      if (checkedCheckboxes === 0) {
+        selectAllCheckbox.indeterminate = false;
+        selectAllCheckbox.checked = false;
+      } else if (checkedCheckboxes === totalCheckboxes) {
+        selectAllCheckbox.indeterminate = false;
+        selectAllCheckbox.checked = true;
+      } else {
+        selectAllCheckbox.indeterminate = true;
+      }
+    });
+  });
+
+  // Handle bulk edit button click
+  bulkEditBtn.addEventListener('click', function() {
+    const selectedCheckbox = document.querySelector('.ticket-checkbox:checked');
+    if (selectedCheckbox) {
+      // Get ticket data from the checkbox attributes
+      const ticketData = {
+        id: selectedCheckbox.getAttribute('data-id'),
+        title: selectedCheckbox.getAttribute('data-title'),
+        description: selectedCheckbox.getAttribute('data-description'),
+        priority: selectedCheckbox.getAttribute('data-priority'),
+        status: selectedCheckbox.getAttribute('data-status'),
+        deadline: selectedCheckbox.getAttribute('data-deadline'),
+        technician: selectedCheckbox.getAttribute('data-technician'),
+        client: selectedCheckbox.getAttribute('data-client')
+      };
+
+      // Populate the edit modal with the selected ticket data
+      document.getElementById('edit-ticket-id').value = ticketData.id;
+      document.getElementById('edit-title').value = ticketData.title;
+      document.getElementById('edit-description').value = ticketData.description;
+      document.getElementById('edit-priority').value = ticketData.priority;
+      document.getElementById('edit-status').value = ticketData.status;
+      document.getElementById('edit-deadline').value = ticketData.deadline;
+      document.getElementById('edit-technician').value = ticketData.technician;
+      document.getElementById('edit-client').value = ticketData.client;
+
+      // Show the edit modal
+      const editModal = new bootstrap.Modal(document.getElementById('editTicketModal'));
+      editModal.show();
+    }
+  });
+
+  // Handle bulk delete button click
+  bulkDeleteBtn.addEventListener('click', function() {
+    const selectedCheckboxes = document.querySelectorAll('.ticket-checkbox:checked');
+    const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.value);
+    
+    if (selectedIds.length > 0) {
+      // Update the delete count in the modal
+      document.getElementById('delete-count').textContent = selectedIds.length;
+      
+      // Clear any existing hidden inputs
+      const form = document.getElementById('bulk-delete-form');
+      const existingInputs = form.querySelectorAll('input[name="ticket_ids"]');
+      existingInputs.forEach(input => input.remove());
+      
+      // Add hidden inputs for each selected ticket ID
+      selectedIds.forEach(id => {
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'ticket_ids';
+        hiddenInput.value = id;
+        form.appendChild(hiddenInput);
+      });
+      
+      // Show the bulk delete modal
+      const deleteModal = new bootstrap.Modal(document.getElementById('bulkDeleteModal'));
+      deleteModal.show();
+    }
+  });
+});
+
+</script>
+
+{% endblock %}

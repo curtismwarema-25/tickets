@@ -1,0 +1,131 @@
+{% extends 'adminportal/base.html' %}
+{% block content %}
+<div class="container py-4 position-relative">
+  <h3>Messages</h3>
+  <form id="messagesForm" method="post" action="{% url 'adminportal:delete_selected_messages' %}">{% csrf_token %}
+    <div class="d-flex justify-content-end mb-2">
+      <button type="button" class="btn btn-outline-primary btn-sm" id="markSelectedReadBtn">Mark selected as read</button>
+      <button type="submit" class="btn btn-outline-danger btn-sm ms-2" id="deleteSelectedBtn" style="display: none;">Delete selected</button>
+    </div>
+    <ul class="nav nav-tabs mb-3" id="messageTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">All</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="received-tab" data-bs-toggle="tab" data-bs-target="#received" type="button" role="tab">Received</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="sent-tab" data-bs-toggle="tab" data-bs-target="#sent" type="button" role="tab">Sent</button>
+      </li>
+    </ul>
+    <div class="tab-content" id="messageTabsContent">
+      <div class="tab-pane fade show active" id="all" role="tabpanel">
+        <ul class="list-group mb-3">
+          {% for msg in all_messages %}
+            <li class="list-group-item d-flex align-items-center {% if not msg.is_read %}list-group-item-info{% else %}list-group-item-light{% endif %}">
+              <input type="checkbox" name="selected_messages" value="{{ msg.id }}" class="form-check-input me-2">
+              <a href="#" class="flex-grow-1 text-decoration-none text-dark" data-bs-toggle="modal" data-bs-target="#messageModal" data-thread-id="{{ msg.thread.id }}">
+                <strong>{{ msg.sender.username }}</strong>: {{ msg.content|truncatechars:50 }}
+                <span class="text-muted float-end">{{ msg.created_at|date:"d M, Y H:i" }}</span>
+              </a>
+            </li>
+          {% if all_messages|length == 0 %}
+            <li class="list-group-item text-muted">No messages.</li>
+          {% endif %}
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="tab-pane fade" id="received" role="tabpanel">
+        <ul class="list-group mb-3">
+          {% for msg in received_messages %}
+            <li class="list-group-item d-flex align-items-center {% if not msg.is_read %}list-group-item-info{% else %}list-group-item-light{% endif %}">
+              <input type="checkbox" name="selected_messages" value="{{ msg.id }}" class="form-check-input me-2">
+              <a href="#" class="flex-grow-1 text-decoration-none text-dark" data-bs-toggle="modal" data-bs-target="#messageModal" data-thread-id="{{ msg.thread.id }}">
+                <strong>{{ msg.sender.username }}</strong>: {{ msg.content|truncatechars:50 }}
+                <span class="text-muted float-end">{{ msg.created_at|date:"d M, Y H:i" }}</span>
+              </a>
+            </li>
+          {% empty %}
+            <li class="list-group-item text-muted">No received messages.</li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="tab-pane fade" id="sent" role="tabpanel">
+        <ul class="list-group mb-3">
+          {% for msg in sent_messages %}
+            <li class="list-group-item d-flex align-items-center {% if not msg.is_read %}list-group-item-warning{% else %}list-group-item-light{% endif %}">
+              <input type="checkbox" name="selected_messages" value="{{ msg.id }}" class="form-check-input me-2">
+              <a href="#" class="flex-grow-1 text-decoration-none text-dark" data-bs-toggle="modal" data-bs-target="#messageModal" data-thread-id="{{ msg.thread.id }}">
+                <strong>To:</strong> {% for user in msg.thread.participants.all %}{% if user != request.user %}{{ user.username }}{% if not forloop.last %}, {% endif %}{% endif %}{% endfor %} - {{ msg.content|truncatechars:50 }}
+                <span class="text-muted float-end">{{ msg.created_at|date:"d M, Y H:i" }}</span>
+              </a>
+            </li>
+          {% empty %}
+            <li class="list-group-item text-muted">No sent messages.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    <!-- Floating Compose Icon -->
+    <a href="{% url 'adminportal:compose_message' %}" class="btn btn-primary rounded-circle shadow position-fixed" style="bottom: 32px; right: 32px; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; z-index: 1050;">
+      <i class="bi bi-pencil-square fs-4"></i>
+    </a>
+  </form>
+  <!-- Message Modal -->
+  <div class="modal fade" id="messageModal" tabindex="-1" aria-labelledby="messageModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="messageModalLabel">Message Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="modalMessageContent">
+          <!-- Message content will be loaded here -->
+        </div>
+        <div class="modal-footer">
+          <form id="replyForm" method="post">
+            {% csrf_token %}
+            <div class="input-group">
+              <textarea class="form-control" name="content" rows="2" placeholder="Type your reply..." required></textarea>
+              <button class="btn btn-primary" type="submit">Reply</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const checkboxes = document.querySelectorAll('input[name="selected_messages"]');
+      const deleteBtn = document.getElementById('deleteSelectedBtn');
+      const markReadBtn = document.getElementById('markSelectedReadBtn');
+      function updateButtons() {
+        const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
+        deleteBtn.style.display = anyChecked ? '' : 'none';
+        markReadBtn.style.display = anyChecked ? '' : '';
+      }
+      checkboxes.forEach(cb => {
+        cb.addEventListener('change', updateButtons);
+      });
+      updateButtons();
+      markReadBtn.addEventListener('click', function() {
+        const form = document.getElementById('messagesForm');
+        form.action = '{% url "adminportal:mark_all_messages_read" %}';
+        form.submit();
+      });
+      // Modal message loading
+      document.querySelectorAll('a[data-bs-toggle="modal"]').forEach(function(link) {
+        link.addEventListener('click', function(e) {
+          const threadId = this.getAttribute('data-thread-id');
+          fetch(`/admin/message_thread/${threadId}/?modal=1`)
+            .then(response => response.text())
+            .then(html => {
+              document.getElementById('modalMessageContent').innerHTML = html;
+              document.getElementById('replyForm').action = `/admin/message_thread/${threadId}/`;
+            });
+        });
+      });
+    });
+  </script>
+</div>
+{% endblock %}

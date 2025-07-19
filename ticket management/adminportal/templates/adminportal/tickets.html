@@ -1,0 +1,925 @@
+{% extends 'adminportal/base.html' %}
+{% load static %}
+{% load ticket_filters %}
+
+{% block content %}
+
+<h1 class="mb-4">All Tickets</h1>
+
+<!-- Filter Button -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="d-flex align-items-center gap-3">
+    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#filterModal">
+      <i class="bi bi-funnel-fill me-2"></i>Filters
+    </button>
+    <form method="GET" class="d-flex" id="global-search-form">
+      <input type="search" name="q" class="form-control me-2" placeholder="Search tickets..." aria-label="Search" value="{{ request.GET.q|default:'' }}">
+      <button class="btn btn-outline-success" type="submit"><i class="bi bi-search"></i></button>
+    </form>
+  </div>
+</div>
+
+<!-- Filter Modal -->
+<div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form method="GET" action="{% url 'adminportal:tickets' %}" id="filter-form">
+        <div class="modal-header">
+          <h5 class="modal-title" id="filterModalLabel">Apply Filters</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body row g-3">
+          <div class="col-md-4">
+            <label for="status-filter" class="form-label">Status</label>
+            <select name="status" id="status-filter" class="form-select">
+              <option value="">All Status</option>
+              <option value="pending" {% if request.GET.status == "pending" %}selected{% endif %}>Pending</option>
+              <option value="pending_approval" {% if request.GET.status == "pending_approval" %}selected{% endif %}>Pending Approval</option>
+              <option value="completed" {% if request.GET.status == "completed" %}selected{% endif %}>Completed</option>
+              <option value="rejected" {% if request.GET.status == "rejected" %}selected{% endif %}>Rejected</option>
+            </select>
+          </div>
+          
+          <div class="col-md-4">
+            <label for="priority-filter" class="form-label">Priority</label>
+            <select name="priority" id="priority-filter" class="form-select">
+              <option value="">All Priority</option>
+              <option value="high" {% if request.GET.priority == "high" %}selected{% endif %}>High</option>
+              <option value="medium" {% if request.GET.priority == "medium" %}selected{% endif %}>Medium</option>
+              <option value="low" {% if request.GET.priority == "low" %}selected{% endif %}>Low</option>
+            </select>
+          </div>
+          
+          <div class="col-md-4">
+            <label for="technician-filter" class="form-label">Assignee</label>
+            <select name="technician" id="technician-filter" class="form-select">
+              <option value="">All Assignees</option>
+              {% for tech in technicians %}
+              <option value="{{ tech.id }}" {% if request.GET.technician == tech.id|stringformat:"s" %}selected{% endif %}>
+                {{ tech.username }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <a href="{% url 'adminportal:tickets' %}" class="btn btn-outline-secondary">Clear Filters</a>
+          <button type="submit" class="btn btn-primary">Apply Filters</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Applied Filters Display -->
+{% if request.GET.status or request.GET.priority or request.GET.technician %}
+<div class="mb-3">
+  <h6 class="d-inline-block me-2">Active Filters:</h6>
+  {% if request.GET.status %}
+    <span class="badge bg-primary me-2">Status: {{ request.GET.status|capfirst }}</span>
+  {% endif %}
+  {% if request.GET.priority %}
+    <span class="badge bg-primary me-2">Priority: {{ request.GET.priority|capfirst }}</span>
+  {% endif %}
+  {% if request.GET.technician %}
+    {% for tech in technicians %}
+      {% if request.GET.technician == tech.id|stringformat:"s" %}
+        <span class="badge bg-primary me-2">Assignee: {{ tech.username }}</span>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+  <a href="{% url 'adminportal:tickets' %}" class="btn btn-sm btn-outline-danger ms-2">Clear All Filters</a>
+</div>
+{% endif %}
+
+<!-- Header Section -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+<h4 class="fw-bold mb-1">Tickets Overview</h4>
+<p class="text-muted mb-0">Showing {{ tickets.start_index }}-{{ tickets.end_index }} of {{ tickets.paginator.count }} ticket{{ tickets.paginator.count|pluralize }}</p>
+  </div>
+  <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTicketModal">
+    <i class="bi bi-plus-lg me-2"></i> Create New Ticket
+  </button>
+</div>
+
+<!-- Tickets Table -->
+<div class="table-responsive">
+  <table class="table table-hover table-striped">
+    <thead>
+      <tr>
+        <th>
+          <a href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}sort_by=id&order={% if request.GET.sort_by == 'id' and request.GET.order == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+            Ticket ID
+            {% if request.GET.sort_by == 'id' %}
+              {% if request.GET.order == 'asc' %}<i class="bi bi-arrow-up"></i>{% else %}<i class="bi bi-arrow-down"></i>{% endif %}
+            {% endif %}
+          </a>
+        </th>
+        <th>
+          <a href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}sort_by=title&order={% if request.GET.sort_by == 'title' and request.GET.order == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+            Title
+            {% if request.GET.sort_by == 'title' %}
+              {% if request.GET.order == 'asc' %}<i class="bi bi-arrow-up"></i>{% else %}<i class="bi bi-arrow-down"></i>{% endif %}
+            {% endif %}
+          </a>
+        </th>
+        <th>Status</th>
+        <th>Priority</th>
+        <th>Assignee</th>
+        <th>Client</th>
+        <th>
+          <a href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}sort_by=created_at&order={% if request.GET.sort_by == 'created_at' and request.GET.order == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+            Created At
+            {% if request.GET.sort_by == 'created_at' %}
+              {% if request.GET.order == 'asc' %}<i class="bi bi-arrow-up"></i>{% else %}<i class="bi bi-arrow-down"></i>{% endif %}
+            {% endif %}
+          </a>
+        </th>
+        <th>
+          <a href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}sort_by=deadline&order={% if request.GET.sort_by == 'deadline' and request.GET.order == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+            Deadline
+            {% if request.GET.sort_by == 'deadline' %}
+              {% if request.GET.order == 'asc' %}<i class="bi bi-arrow-up"></i>{% else %}<i class="bi bi-arrow-down"></i>{% endif %}
+            {% endif %}
+          </a>
+        </th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ticket in tickets %}
+      <tr>
+        <td>{{ ticket.id }}</td>
+        <td>{{ ticket.title }}</td>
+        <td>
+          {% if ticket.status == 'pending_approval' %}
+            <span class="badge rounded-pill bg-warning text-dark">Pending Approval</span>
+          {% elif ticket.status == 'completed' %}
+            <span class="badge rounded-pill bg-success">Completed</span>
+          {% elif ticket.status == 'pending' %}
+            <span class="badge rounded-pill bg-info text-dark">Pending</span>
+          {% elif ticket.status == 'rejected' %}
+            <span class="badge rounded-pill bg-danger">Rejected</span>
+          {% else %}
+            <span class="badge rounded-pill bg-secondary">{{ ticket.status|capfirst }}</span>
+          {% endif %}
+        </td>
+        <td><span class="badge rounded-pill bg-{{ ticket.priority|priority_color }} text-uppercase">{{ ticket.priority }}</span></td>
+        <td>{{ ticket.technician.username|default:'Unassigned' }}</td>
+        <td>{{ ticket.client.name }}</td>
+        <td>{{ ticket.created_at|date:"d M Y" }}</td>
+        <td>
+          {% if ticket.deadline %}
+            {% now "Y-m-d H:i" as current_time %}
+            {% if ticket.deadline|date:"Y-m-d H:i" < current_time %}
+              <span class="text-danger fw-bold">Overdue</span>
+            {% else %}
+              {{ ticket.deadline|date:"d M Y" }}
+            {% endif %}
+          {% else %}
+            No deadline
+          {% endif %}
+        </td>
+        <td>
+          <div class="dropdown">
+            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="ticketActions{{ ticket.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+              Actions
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="ticketActions{{ ticket.id }}">
+              <li>
+                <a class="dropdown-item view-ticket" href="#"
+                  data-bs-toggle="modal"
+                  data-bs-target="#viewTicketModal"
+                  data-id="{{ ticket.id }}"
+                  data-title="{{ ticket.title }}"
+                  data-description="{{ ticket.description }}"
+                  data-creator="{{ ticket.creator.username }}"
+                  data-client="{{ ticket.client.name }}"
+                  data-technician="{{ ticket.technician.username|default:'Unassigned' }}"
+                  data-priority="{{ ticket.priority }}"
+                  data-deadline="{{ ticket.deadline|date:'Y-m-d H:i' }}"
+                  data-status="{{ ticket.status }}"
+                  data-created="{{ ticket.created_at|date:'Y-m-d H:i' }}">
+                  <i class="bi bi-eye me-1"></i>View
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item edit-ticket" href="#"
+                  data-bs-toggle="modal"
+                  data-bs-target="#editTicketModal"
+                  data-id="{{ ticket.id }}"
+                  data-title="{{ ticket.title }}"
+                  data-description="{{ ticket.description }}"
+                  data-priority="{{ ticket.priority }}"
+                  data-status="{{ ticket.status }}"
+                  data-deadline="{{ ticket.deadline|date:'Y-m-d\\TH:i' }}"
+                  data-technician="{{ ticket.technician.id|default:'' }}"
+                  data-technician-name="{{ ticket.technician.username|default:'Unassigned' }}"
+                  data-client-id="{{ ticket.client.id }}"
+                  data-client-name="{{ ticket.client.name }}">
+                  <i class="bi bi-pencil me-1"></i>Edit
+                </a>
+              </li>
+              {% if ticket.status == 'pending_approval' %}
+                <li>
+                  <a class="dropdown-item review-ticket" href="#"
+                    data-bs-toggle="modal"
+                    data-bs-target="#approveTicketModal"
+                    data-id="{{ ticket.id }}"
+                    data-title="{{ ticket.title }}"
+                    data-description="{{ ticket.description }}"
+                    data-creator="{{ ticket.creator.username }}"
+                    data-technician="{{ ticket.technician.username|default:'Unassigned' }}"
+                    data-priority="{{ ticket.priority }}"
+                    data-deadline="{{ ticket.deadline|date:'Y-m-d H:i' }}"
+                    data-client="{{ ticket.client.name }}"
+                    data-created="{{ ticket.created_at|date:'Y-m-d H:i' }}"
+                    data-status="{{ ticket.status }}">
+                    <i class="bi bi-check-circle me-1"></i>Review
+                  </a>
+                </li>
+              {% endif %}
+            </ul>
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="9" class="text-center py-5">
+          <i class="bi bi-ticket-perforated display-1 text-muted"></i>
+          <h5 class="text-muted mt-3">No tickets found</h5>
+          <p class="text-muted">Create a new ticket to get started</p>
+          <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTicketModal">
+            <i class="bi bi-plus-lg me-1"></i> Create Ticket
+          </button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Pagination -->
+{% if tickets.has_other_pages %}
+<nav aria-label="Page navigation">
+  <ul class="pagination justify-content-center mt-4">
+    {% if tickets.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ tickets.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.priority %}&priority={{ request.GET.priority }}{% endif %}{% if request.GET.technician %}&technician={{ request.GET.technician }}{% endif %}{% if request.GET.sort_by %}&sort_by={{ request.GET.sort_by }}{% endif %}{% if request.GET.order %}&order={{ request.GET.order }}{% endif %}" aria-label="Previous">
+          <span aria-hidden="true">&laquo;</span>
+        </a>
+      </li>
+    {% else %}
+      <li class="page-item disabled">
+        <span class="page-link">&laquo;</span>
+      </li>
+    {% endif %}
+
+    {% for i in tickets.paginator.page_range %}
+      {% if tickets.number == i %}
+        <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+      {% else %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ i }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.priority %}&priority={{ request.GET.priority }}{% endif %}{% if request.GET.technician %}&technician={{ request.GET.technician }}{% endif %}{% if request.GET.sort_by %}&sort_by={{ request.GET.sort_by }}{% endif %}{% if request.GET.order %}&order={{ request.GET.order }}{% endif %}">{{ i }}</a>
+        </li>
+      {% endif %}
+    {% endfor %}
+
+    {% if tickets.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ tickets.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.priority %}&priority={{ request.GET.priority }}{% endif %}{% if request.GET.technician %}&technician={{ request.GET.technician }}{% endif %}{% if request.GET.sort_by %}&sort_by={{ request.GET.sort_by }}{% endif %}{% if request.GET.order %}&order={{ request.GET.order }}{% endif %}" aria-label="Next">
+          <span aria-hidden="true">&raquo;</span>
+        </a>
+      </li>
+    {% else %}
+      <li class="page-item disabled">
+        <span class="page-link">&raquo;</span>
+      </li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}
+
+<!-- Approve Ticket Modal -->
+<div class="modal fade" id="approveTicketModal" tabindex="-1" aria-labelledby="approveTicketModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form method="POST" action="{% url 'adminportal:approve_ticket' 0 %}" enctype="multipart/form-data" id="approve-ticket-form">
+        {% csrf_token %}
+        <input type="hidden" name="ticket_id" id="approve-ticket-id">
+        <div class="modal-header">
+          <h5 class="modal-title">Review & Approve Ticket</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body row g-3">
+          <div class="col-md-6">
+            <label class="form-label text-muted">Title</label>
+            <input type="text" class="form-control-plaintext" id="approve-title" readonly>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label text-muted">Creator</label>
+            <input type="text" class="form-control-plaintext" id="approve-creator" readonly>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label text-muted">Client</label>
+            <input type="text" class="form-control-plaintext" id="approve-client" readonly>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label text-muted">Technician</label>
+            <input type="text" class="form-control-plaintext" id="approve-technician" readonly>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label text-muted">Priority</label>
+            <input type="text" class="form-control-plaintext" id="approve-priority" readonly>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label text-muted">Deadline</label>
+            <input type="text" class="form-control-plaintext" id="approve-deadline" readonly>
+          </div>
+          <div class="col-md-12">
+            <label class="form-label text-muted">Description</label>
+            <textarea class="form-control-plaintext" id="approve-description" rows="3" readonly></textarea>
+          </div>
+
+          <!-- Required Fields for Approval -->
+          <div class="col-md-12">
+            <label class="form-label">Issue Description <span class="text-danger">*</span></label>
+            <textarea name="issue_description" id="issue_description" class="form-control" rows="3" required placeholder="Describe the issue in detail..."></textarea>
+          </div>
+          <div class="col-md-12">
+            <label class="form-label">Solution <span class="text-danger">*</span></label>
+            <textarea name="solution" id="solution" class="form-control" rows="3" required placeholder="Outline the solution implemented..."></textarea>
+          </div>
+          <div class="col-md-12">
+            <label class="form-label">Sign-off Attachment (Optional)</label>
+            <input type="file" name="signoff_attachment" class="form-control">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" id="reject-button"><i class="bi bi-x-circle me-2"></i>Reject</button>
+          <button type="submit" class="btn btn-success"><i class="bi bi-check-circle me-2"></i>Approve Ticket</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Reject Ticket Modal -->
+<div class="modal fade" id="rejectTicketModal" tabindex="-1" aria-labelledby="rejectTicketModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{% url 'adminportal:reject_ticket' 0 %}" id="reject-ticket-form">
+        {% csrf_token %}
+        <input type="hidden" name="ticket_id" id="reject-ticket-id">
+        <div class="modal-header">
+          <h5 class="modal-title">Reject Ticket</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-3">Are you sure you want to reject ticket "<span id="reject-ticket-title" class="fw-medium"></span>"?</p>
+          <div class="mb-3">
+            <label for="rejection-reason" class="form-label">Reason for Rejection <span class="text-danger">*</span></label>
+            <textarea name="rejection_reason" id="rejection-reason" class="form-control" rows="3" required 
+              placeholder="Please provide a reason for rejecting this ticket..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger">Confirm Rejection</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Create Ticket Modal -->
+<div class="modal fade" id="createTicketModal" tabindex="-1" aria-labelledby="createTicketModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form method="POST" action="{% url 'adminportal:create_ticket' %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="createTicketModalLabel">Create New Ticket</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body row g-3">
+          <div class="col-md-6">
+            <label for="title" class="form-label">Title <span class="text-danger">*</span></label>
+            <input type="text" name="title" id="title" class="form-control" required placeholder="Enter ticket title">
+          </div>
+          <div class="col-md-6">
+            <label for="deadline" class="form-label">Deadline</label>
+            <input type="datetime-local" name="deadline" id="deadline" class="form-control">
+          </div>
+          <div class="col-12">
+            <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
+            <textarea name="description" id="description" class="form-control" rows="3" required placeholder="Provide a detailed description of the issue..."></textarea>
+          </div>
+          <div class="col-md-4">
+            <label for="priority" class="form-label">Priority <span class="text-danger">*</span></label>
+            <select name="priority" id="priority" class="form-select" required>
+              <option value="high">High</option>
+              <option value="medium" selected>Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
+            <select name="status" id="status" class="form-select" required>
+              <option value="pending">Pending</option>
+              <option value="pending_approval">Pending Approval</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label for="client" class="form-label">Client <span class="text-danger">*</span></label>
+            <select name="client" id="client" class="form-select" required>
+              {% for client in clients %}
+              <option value="{{ client.id }}">{{ client.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label for="technician" class="form-label">Technician</label>
+            <select name="technician" id="technician" class="form-select">
+              <option value="">-- Unassigned --</option>
+              {% for tech in technicians %}
+              <option value="{{ tech.id }}">{{ tech.username }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Ticket</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Ticket Modal -->
+<div class="modal fade" id="editTicketModal" tabindex="-1" aria-labelledby="editTicketModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form method="POST" action="{% url 'adminportal:edit_ticket' %}" id="edit-ticket-form">
+        {% csrf_token %}
+        <input type="hidden" name="ticket_id" id="edit-ticket-id">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Ticket</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body row g-3">
+          <div class="col-md-6">
+            <label for="edit-title" class="form-label">Title</label>
+            <input type="text" name="title" id="edit-title" class="form-control" readonly>
+          </div>
+          <div class="col-md-6">
+            <label for="edit-deadline" class="form-label">Deadline</label>
+            <input type="datetime-local" name="deadline" id="edit-deadline" class="form-control" readonly>
+          </div>
+          <div class="col-12">
+            <label for="edit-description" class="form-label">Description</label>
+            <textarea name="description" id="edit-description" class="form-control" rows="3" readonly></textarea>
+          </div>
+          <div class="col-md-4">
+            <label for="edit-priority" class="form-label fw-bold">Priority</label>
+            <select name="priority" id="edit-priority" class="form-select" required>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label for="edit-status" class="form-label">Status</label>
+            <input type="text" name="status" id="edit-status" class="form-control" readonly>
+          </div>
+          <div class="col-md-4">
+            <label for="edit-client" class="form-label">Client</label>
+            <input type="text" name="client_display" id="edit-client-display" class="form-control" readonly>
+            <input type="hidden" name="client" id="edit-client">
+          </div>
+          <div class="col-md-6">
+            <label for="edit-technician" class="form-label fw-bold">Technician</label>
+            <select name="technician" id="edit-technician" class="form-select">
+              <option value="">-- Unassigned --</option>
+              {% for tech in technicians %}
+                <option value="{{ tech.id }}">{{ tech.username }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" id="save-changes-btn">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- View Ticket Modal -->
+<div class="modal fade" id="viewTicketModal" tabindex="-1" aria-labelledby="viewTicketModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Ticket Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Basic Information -->
+        <div class="mb-4">
+          <h6 class="mb-3 text-primary">Basic Information</h6>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="mb-1">
+                <label class="form-label text-muted">Title</label>
+                <div id="view-title" class="fw-medium text-dark"></div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-1">
+                <label class="form-label text-muted">Status</label>
+                <div id="view-status" class="fw-medium text-dark"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- People -->
+        <div class="mb-4">
+          <h6 class="mb-3 text-primary">People</h6>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="mb-1">
+                <label class="form-label text-muted">Client</label>
+                <div id="view-client" class="fw-medium text-dark"></div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-1">
+                <label class="form-label text-muted">Creator</label>
+                <div id="view-creator" class="fw-medium text-dark"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Time Information -->
+        <div class="mb-4">
+          <h6 class="mb-3 text-primary">Time Information</h6>
+          <div class="mb-1">
+            <label class="form-label text-muted">Deadline</label>
+            <div id="view-deadline" class="fw-medium text-dark"></div>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div>
+          <h6 class="mb-3 text-primary">Description</h6>
+          <div id="view-description" class="fw-medium text-dark"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Priority Change Confirmation Modal -->
+<div class="modal fade" id="priorityChangeModal" tabindex="-1" aria-labelledby="priorityChangeModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirm Priority Change</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-3">Are you sure you want to change the priority of ticket "<span id="priority-ticket-title" class="fw-medium"></span>"?</p>
+        <div class="row">
+          <div class="col-6">
+            <label class="form-label text-muted">Current Priority:</label>
+            <div id="current-priority" class="fw-medium"></div>
+          </div>
+          <div class="col-6">
+            <label class="form-label text-muted">New Priority:</label>
+            <div id="new-priority" class="fw-medium"></div>
+          </div>
+        </div>
+        <div class="mt-3">
+          <label class="form-label text-muted">Assigned Technician:</label>
+          <div id="priority-technician" class="fw-medium"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-warning" id="confirm-priority-change">Confirm Priority Change</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Technician Reassignment Confirmation Modal -->
+<div class="modal fade" id="technicianChangeModal" tabindex="-1" aria-labelledby="technicianChangeModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirm Technician Reassignment</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-3">Are you sure you want to reassign ticket "<span id="reassign-ticket-title" class="fw-medium"></span>"?</p>
+        <div class="row">
+          <div class="col-6">
+            <label class="form-label text-muted">Current Technician:</label>
+            <div id="current-technician" class="fw-medium"></div>
+          </div>
+          <div class="col-6">
+            <label class="form-label text-muted">New Technician:</label>
+            <div id="new-technician" class="fw-medium"></div>
+          </div>
+        </div>
+        <div class="mt-3">
+          <label class="form-label text-muted">Priority:</label>
+          <div id="reassign-priority" class="fw-medium"></div>
+        </div>
+        <div class="mt-3">
+          <label class="form-label text-muted">Client:</label>
+          <div id="reassign-client" class="fw-medium"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="confirm-technician-change">Confirm Reassignment</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Global variables to track original values
+let originalPriority = '';
+let originalTechnician = '';
+let originalTechnicianName = '';
+let currentTicketData = {};
+
+// Handle Edit Modal
+document.addEventListener('DOMContentLoaded', () => {
+  const editModal = document.getElementById('editTicketModal');
+  editModal.addEventListener('show.bs.modal', function (event) {
+    const button = event.relatedTarget;
+
+    // Store original values and current ticket data
+    originalPriority = button.getAttribute('data-priority');
+    originalTechnician = button.getAttribute('data-technician');
+    originalTechnicianName = button.getAttribute('data-technician-name');
+    
+    currentTicketData = {
+      id: button.getAttribute('data-id'),
+      title: button.getAttribute('data-title'),
+      description: button.getAttribute('data-description'),
+      priority: button.getAttribute('data-priority'),
+      status: button.getAttribute('data-status'),
+      deadline: button.getAttribute('data-deadline'),
+      technician: button.getAttribute('data-technician'),
+      technicianName: button.getAttribute('data-technician-name'),
+      clientId: button.getAttribute('data-client-id'),
+      clientName: button.getAttribute('data-client-name')
+    };
+
+    // Populate form fields
+    document.getElementById('edit-ticket-id').value = currentTicketData.id;
+    document.getElementById('edit-title').value = currentTicketData.title;
+    document.getElementById('edit-description').value = currentTicketData.description;
+    document.getElementById('edit-priority').value = currentTicketData.priority;
+    document.getElementById('edit-status').value = currentTicketData.status;
+    document.getElementById('edit-deadline').value = currentTicketData.deadline;
+    document.getElementById('edit-technician').value = currentTicketData.technician;
+    document.getElementById('edit-client').value = currentTicketData.clientId;
+    document.getElementById('edit-client-display').value = currentTicketData.clientName;
+  });
+});
+
+// Handle View Modal
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.view-ticket').forEach(link => {
+    link.addEventListener('click', function () {
+      document.getElementById('view-title').textContent = this.dataset.title;
+      document.getElementById('view-status').textContent = this.dataset.status.replace(/_/g, ' ').charAt(0).toUpperCase() + 
+        this.dataset.status.slice(1).replace(/_/g, ' ');
+      document.getElementById('view-description').textContent = this.dataset.description;
+      document.getElementById('view-creator').textContent = this.dataset.creator;
+      document.getElementById('view-client').textContent = this.dataset.client;
+      document.getElementById('view-deadline').textContent = this.dataset.deadline || 'No deadline set';
+    });
+  });
+
+  // Handle Edit Modal from dropdown
+  document.querySelectorAll('.edit-ticket').forEach(link => {
+    link.addEventListener('click', function (event) {
+      const button = event.currentTarget; // Use currentTarget as it's the element with the listener
+
+      // Store original values and current ticket data
+      originalPriority = button.getAttribute('data-priority');
+      originalTechnician = button.getAttribute('data-technician');
+      originalTechnicianName = button.getAttribute('data-technician-name');
+      
+      currentTicketData = {
+        id: button.getAttribute('data-id'),
+        title: button.getAttribute('data-title'),
+        description: button.getAttribute('data-description'),
+        priority: button.getAttribute('data-priority'),
+        status: button.getAttribute('data-status'),
+        deadline: button.getAttribute('data-deadline'),
+        technician: button.getAttribute('data-technician'),
+        technicianName: button.getAttribute('data-technician-name'),
+        clientId: button.getAttribute('data-client-id'),
+        clientName: button.getAttribute('data-client-name')
+      };
+
+      // Populate form fields
+      document.getElementById('edit-ticket-id').value = currentTicketData.id;
+      document.getElementById('edit-title').value = currentTicketData.title;
+      document.getElementById('edit-description').value = currentTicketData.description;
+      document.getElementById('edit-priority').value = currentTicketData.priority;
+      document.getElementById('edit-status').value = currentTicketData.status;
+      document.getElementById('edit-deadline').value = currentTicketData.deadline;
+      document.getElementById('edit-technician').value = currentTicketData.technician;
+      document.getElementById('edit-client').value = currentTicketData.clientId;
+      document.getElementById('edit-client-display').value = currentTicketData.clientName;
+    });
+  });
+
+  // Handle Save Changes Button with Validation
+  const saveChangesBtn = document.getElementById('save-changes-btn');
+  
+  if (saveChangesBtn) {
+    saveChangesBtn.addEventListener('click', function() {
+      const currentPriority = document.getElementById('edit-priority').value;
+      const currentTechnician = document.getElementById('edit-technician').value;
+      const currentTechnicianText = document.getElementById('edit-technician').selectedOptions[0].text;
+      
+      // Check if priority changed
+      const priorityChanged = currentPriority !== originalPriority;
+      
+      // Check if technician changed
+      const technicianChanged = currentTechnician !== originalTechnician;
+      
+      if (priorityChanged && technicianChanged) {
+        // Both changed - show priority change modal first
+        showPriorityChangeModal(currentPriority, currentTechnician, currentTechnicianText);
+      } else if (priorityChanged) {
+        // Only priority changed
+        showPriorityChangeModal(currentPriority, currentTechnician, currentTechnicianText);
+      } else if (technicianChanged) {
+        // Only technician changed
+        showTechnicianChangeModal(currentTechnician, currentTechnicianText, currentPriority);
+      } else {
+        // No changes to priority or technician - submit directly
+        document.getElementById('edit-ticket-form').submit();
+      }
+    });
+  }
+});
+
+function showPriorityChangeModal(newPriority, newTechnician, newTechnicianText) {
+  // Populate priority change modal
+  document.getElementById('priority-ticket-title').textContent = currentTicketData.title;
+  document.getElementById('current-priority').textContent = originalPriority.charAt(0).toUpperCase() + originalPriority.slice(1);
+  document.getElementById('new-priority').textContent = newPriority.charAt(0).toUpperCase() + newPriority.slice(1);
+  document.getElementById('priority-technician').textContent = newTechnicianText || 'Unassigned';
+  
+  // Show modal
+  const priorityModal = new bootstrap.Modal(document.getElementById('priorityChangeModal'));
+  priorityModal.show();
+}
+
+function showTechnicianChangeModal(newTechnician, newTechnicianText, currentPriority) {
+  // Populate technician change modal
+  document.getElementById('reassign-ticket-title').textContent = currentTicketData.title;
+  document.getElementById('current-technician').textContent = originalTechnicianName || 'Unassigned';
+  document.getElementById('new-technician').textContent = newTechnicianText || 'Unassigned';
+  document.getElementById('reassign-priority').textContent = currentPriority.charAt(0).toUpperCase() + currentPriority.slice(1);
+  document.getElementById('reassign-client').textContent = currentTicketData.clientName;
+  
+  // Show modal
+  const technicianModal = new bootstrap.Modal(document.getElementById('technicianChangeModal'));
+  technicianModal.show();
+}
+
+// Handle confirmation buttons
+document.addEventListener('DOMContentLoaded', function () {
+  // Priority change confirmation
+  document.getElementById('confirm-priority-change').addEventListener('click', function() {
+    const currentTechnician = document.getElementById('edit-technician').value;
+    const currentTechnicianText = document.getElementById('edit-technician').selectedOptions[0].text;
+    const technicianChanged = currentTechnician !== originalTechnician;
+    
+    // Close priority modal
+    bootstrap.Modal.getInstance(document.getElementById('priorityChangeModal')).hide();
+    
+    if (technicianChanged) {
+      // Show technician change modal next
+      showTechnicianChangeModal(currentTechnician, currentTechnicianText, document.getElementById('edit-priority').value);
+    } else {
+      // Submit form
+      document.getElementById('edit-ticket-form').submit();
+    }
+  });
+  
+  // Technician change confirmation
+  document.getElementById('confirm-technician-change').addEventListener('click', function() {
+    // Close modal and submit form
+    bootstrap.Modal.getInstance(document.getElementById('technicianChangeModal')).hide();
+    document.getElementById('edit-ticket-form').submit();
+  });
+});
+
+// Handle Approve and Reject Modals with Validation
+document.addEventListener('DOMContentLoaded', function () {
+  const approveModal = document.getElementById('approveTicketModal');
+  const rejectModal = document.getElementById('rejectTicketModal');
+  const rejectButton = document.getElementById('reject-button');
+  let currentTicketId = '';
+  let currentTicketTitle = '';
+
+  // Handle Approve Modal from dropdown
+  document.querySelectorAll('.review-ticket').forEach(link => {
+    link.addEventListener('click', function (event) {
+      const button = event.currentTarget;
+      const form = document.getElementById('approve-ticket-form');
+
+      // Store current ticket info
+      currentTicketId = button.getAttribute('data-id');
+      currentTicketTitle = button.getAttribute('data-title');
+
+      // Update approve form
+      form.action = form.action.replace(/\/\d+\/?$/, `/${currentTicketId}/`);
+      document.getElementById('approve-ticket-id').value = currentTicketId;
+
+      // Fill in approval modal fields
+      document.getElementById('approve-title').value = button.getAttribute('data-title');
+      document.getElementById('approve-description').value = button.getAttribute('data-description');
+      document.getElementById('approve-creator').value = button.getAttribute('data-creator');
+      document.getElementById('approve-technician').value = button.getAttribute('data-technician');
+      document.getElementById('approve-priority').value = button.getAttribute('data-priority');
+      document.getElementById('approve-deadline').value = button.getAttribute('data-deadline');
+      document.getElementById('approve-client').value = button.getAttribute('data-client');
+    });
+  });
+
+  // Handle reject button click with validation
+  if (rejectButton) {
+    rejectButton.addEventListener('click', function() {
+      // Check if required fields are filled
+      const issueDescription = document.getElementById('issue_description').value.trim();
+      const solution = document.getElementById('solution').value.trim();
+      
+      if (!issueDescription || !solution) {
+        alert('Please fill in the Issue Description and Solution fields before rejecting the ticket.');
+        return false;
+      }
+      
+      // If validation passes, show the reject modal
+      const rejectModalInstance = new bootstrap.Modal(rejectModal);
+      rejectModalInstance.show();
+    });
+  }
+
+  if (rejectModal) {
+    // Set up rejection modal when it opens
+    rejectModal.addEventListener('show.bs.modal', function() {
+      const form = document.getElementById('reject-ticket-form');
+      
+      // Update reject form action with current ticket ID
+      form.action = form.action.replace(/\/\d+\/?$/, `/${currentTicketId}/`);
+      
+      document.getElementById('reject-ticket-id').value = currentTicketId;
+      document.getElementById('reject-ticket-title').textContent = currentTicketTitle;
+      
+      // Clear any previous rejection reason
+      document.getElementById('rejection-reason').value = '';
+
+      // Close approve modal
+      const approveModalInstance = bootstrap.Modal.getInstance(approveModal);
+      if (approveModalInstance) {
+        approveModalInstance.hide();
+      }
+    });
+
+    // Validate rejection form before submission
+    document.getElementById('reject-ticket-form').addEventListener('submit', function(e) {
+      const reason = document.getElementById('rejection-reason').value.trim();
+      if (!reason) {
+        e.preventDefault();
+        alert('Please provide a reason for rejecting the ticket.');
+        return false;
+      }
+    });
+  }
+});
+</script>
+
+{% endblock %}

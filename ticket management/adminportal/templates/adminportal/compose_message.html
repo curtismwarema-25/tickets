@@ -1,0 +1,27 @@
+{% extends 'adminportal/base.html' %}
+{% block content %}
+<div class="container py-4 position-relative">
+  <h3>Compose New Message</h3>
+  <form method="post" class="mb-4">{% csrf_token %}
+    <div class="mb-3">
+      <label for="recipient" class="form-label">Recipient</label>
+      <select class="form-select" id="recipient" name="recipient" required>
+        <option value="">Select recipient</option>
+        {% for emp in employees %}
+          <option value="{{ emp.id }}">{{ emp.username }} ({{ emp.email }})</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="mb-3">
+      <label for="content" class="form-label">Message</label>
+      <textarea class="form-control" id="content" name="content" rows="4" required></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary w-100">Send Message</button>
+    <a href="{% url 'adminportal:messages' %}" class="btn btn-secondary w-100 mt-2">Cancel</a>
+  </form>
+  <!-- Floating Compose Icon -->
+  <a href="{% url 'adminportal:compose_message' %}" class="btn btn-primary rounded-circle shadow position-fixed" style="bottom: 32px; right: 32px; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; z-index: 1050;">
+    <i class="bi bi-pencil-square fs-4"></i>
+  </a>
+</div>
+{% endblock %}

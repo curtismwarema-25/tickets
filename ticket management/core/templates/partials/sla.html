@@ -1,0 +1,38 @@
+<h5>SLA Monitoring Settings</h5>
+<form method="post">
+  {% csrf_token %}
+
+  <!-- Enable SLA Tracking -->
+  <div class="form-check form-switch mb-3">
+    <input class="form-check-input" type="checkbox" id="enableSLA" name="enable_sla">
+    <label class="form-check-label" for="enableSLA">Enable SLA Tracking</label>
+  </div>
+
+  <!-- SLA Thresholds -->
+  <div class="mb-3">
+    <label class="form-label fw-bold">SLA Thresholds (Hours)</label>
+
+    <div class="input-group mb-2">
+      <span class="input-group-text">High Priority</span>
+      <input type="number" class="form-control" name="sla_high" min="1" max="24" placeholder="e.g., 2">
+    </div>
+
+    <div class="input-group mb-2">
+      <span class="input-group-text">Medium Priority</span>
+      <input type="number" class="form-control" name="sla_medium" min="1" max="48" placeholder="e.g., 6">
+    </div>
+
+    <div class="input-group mb-3">
+      <span class="input-group-text">Low Priority</span>
+      <input type="number" class="form-control" name="sla_low" min="1" max="72" placeholder="e.g., 24">
+    </div>
+  </div>
+
+  <!-- Alert Admin on Breach -->
+  <div class="form-check mb-3">
+    <input class="form-check-input" type="checkbox" id="alertAdmin" name="alert_admin">
+    <label class="form-check-label" for="alertAdmin">Alert Admin on SLA Breach</label>
+  </div>
+
+  <button type="submit" class="btn btn-outline-primary">Save SLA Settings</button>
+</form>

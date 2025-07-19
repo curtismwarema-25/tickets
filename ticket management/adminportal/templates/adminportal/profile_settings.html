@@ -1,0 +1,120 @@
+{% extends 'adminportal/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid px-4">
+  <div class="row g-4">
+    <div class="col-12 col-lg-4">
+      <!-- Profile Information -->
+      <div class="card mb-4 h-100">
+        <div class="card-body text-center">
+          <div class="avatar mx-auto mb-3">
+            {{ user.username|slice:":1"|upper }}
+          </div>
+          <h5 class="card-title">{{ user.username }}</h5>
+          <p class="text-muted">{{ user.email }}</p>
+        </div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item d-flex justify-content-between">
+            <span>Name:</span>
+            <span>{{ user.username }}</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between">
+            <span>Email:</span>
+            <span>{{ user.email }}</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between">
+            <span>Role:</span>
+            <span class="badge bg-primary">{{ user.role|capfirst }}</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between">
+            <span>Member since:</span>
+            <span>{{ user.date_joined|date:"F Y" }}</span>
+          </li>
+        </ul>
+      </div>
+      <!-- Your Statistics -->
+      <div class="card mb-4 h-100">
+        <div class="card-body">
+          <h5 class="card-title">Your Statistics</h5>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              Completed
+              <span class="badge bg-success rounded-pill">{{ completed_tickets }}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              Pending
+              <span class="badge bg-warning rounded-pill">{{ pending_tickets }}</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-lg-8">
+      <div class="row g-4">
+        <div class="col-12">
+          <!-- Your Tickets -->
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="card-title">Your Tickets</h5>
+              <p class="card-subtitle mb-2 text-muted">Tickets you've created or been assigned to</p>
+              <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Title</th>
+                      <th>Client</th>
+                      <th>Priority</th>
+                      <th>Status</th>
+                      <th>Created</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for ticket in user_tickets %}
+                    <tr>
+                      <td>{{ ticket.title }}</td>
+                      <td>{{ ticket.client.name }}</td>
+                      <td><span class="badge bg-danger">{{ ticket.get_priority_display }}</span></td>
+                      <td><span class="badge bg-dark">{{ ticket.get_status_display }}</span></td>
+                      <td>{{ ticket.created_at|date:"d M, Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                      <td colspan="5" class="text-center">You have no tickets.</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-12">
+          <!-- Change Password -->
+          <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="card-title">Change Password</h5>
+              <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                  <label for="id_old_password" class="form-label">Old password:</label>
+                  {{ form.old_password }}
+                </div>
+                <div class="mb-3">
+                  <label for="id_new_password1" class="form-label">New password:</label>
+                  {{ form.new_password1 }}
+                </div>
+                <div class="mb-3">
+                  <label for="id_new_password2" class="form-label">New password confirmation:</label>
+                  {{ form.new_password2 }}
+                </div>
+                <button type="submit" class="btn btn-primary">Change Password</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+<!-- partials/sidebar.html -->
+<div class="sidebar d-flex flex-column p-3">
+  <h4 class="sidebar-brand mb-4 text-white text-center">TicketMaster</h4>
+  <ul class="nav nav-pills flex-column">
+    <li class="nav-item">
+      <a href="{% url 'employeeportal:dashboard' %}"
+         class="nav-link {% if request.path == '/employee/dashboard/' %}active{% endif %}">
+        <i class="bi bi-speedometer2 me-2"></i>Dashboard
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="{% url 'employeeportal:tickets' %}"
+         class="nav-link {% if request.path|slice:':17' == '/employee/tickets' %}active{% endif %}">
+        <i class="bi bi-ticket-perforated me-2"></i>Tickets
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="{% url 'employeeportal:clients' %}"
+         class="nav-link {% if request.path == '/employee/clients/' %}active{% endif %}">
+        <i class="bi bi-people me-2"></i>Clients
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="{% url 'employeeportal:settings' %}"
+         class="nav-link {% if request.path == '/settings/' %}active{% endif %}">
+        <i class="bi bi-gear me-2"></i>Settings
+      </a>
+    </li>
+  </ul>
+</div>

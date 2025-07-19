@@ -1,0 +1,224 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>{% block title %}Admin Portal{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+  <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+</head>
+
+<body class="bg-light d-flex">
+
+  <!-- Toast Messages -->
+  {% if messages %}
+    <div class="toast-messages position-fixed top-0 start-50 translate-middle-x mt-3 z-1050" style="min-width: 300px;">
+      {% for message in messages %}
+        <div class="alert alert-success alert-dismissible fade show shadow" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- Sidebar -->
+  <aside class="sidebar p-3 d-flex flex-column justify-content-between" id="sidebar">
+    <div>
+      <div class="mb-4 d-flex justify-content-between align-items-center">
+        <div>
+          <h5 class="sidebar-brand mb-0">Admin</h5>
+          <small class="text-muted">Support Portal</small>
+        </div>
+        <button class="btn btn-sm btn-outline-secondary d-lg-none" id="toggleSidebar">
+          <i class="bi bi-list"></i>
+        </button>
+      </div>
+      <ul class="nav flex-column mb-auto">
+        <li class="nav-item-header text-muted mt-3 mb-1">General</li>
+        <li class="nav-item mb-2">
+          <a href="{% url 'adminportal:dashboard' %}" class="nav-link text-dark {% if request.path == '/admin/dashboard/' %}active{% endif %}">
+            <i class="bi bi-speedometer2 me-2"></i> <span class="link-text">Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item mb-2">
+          <a href="{% url 'adminportal:clients' %}" class="nav-link text-dark {% if request.path == '/admin/clients/' %}active{% endif %}">
+            <i class="bi bi-people me-2"></i> <span class="link-text">Clients</span>
+          </a>
+        </li>
+        <li class="nav-item mb-2">
+          <a href="{% url 'adminportal:employees' %}" class="nav-link text-dark {% if request.path == '/admin/employees/' %}active{% endif %}">
+            <i class="bi bi-person-badge me-2"></i> <span class="link-text">Employees</span>
+          </a>
+        </li>
+
+        <li class="nav-item mb-2 dropdown">
+          <a href="#tickets-submenu" data-bs-toggle="collapse" aria-expanded="{% if 'tickets' in request.path %}true{% else %}false{% endif %}" class="nav-link text-dark d-flex align-items-center dropdown-toggle {% if 'tickets' in request.path %}active{% endif %}">
+            <i class="bi bi-ticket-detailed me-2"></i> <span class="link-text">Tickets</span>
+          </a>
+          <ul class="collapse list-unstyled {% if 'tickets' in request.path %}show{% endif %}" id="tickets-submenu">
+            <li><a class="dropdown-item text-dark {% if not request.GET.status and not request.GET.my and not request.GET.overdue %}active{% endif %}" href="{% url 'adminportal:tickets' %}"><i class="bi bi-list-ul me-2"></i>All Tickets</a></li>
+            <li><a class="dropdown-item text-dark {% if request.GET.status == 'pending' %}active{% endif %}" href="{% url 'adminportal:tickets' %}?status=pending"><i class="bi bi-hourglass-split me-2 text-warning"></i>Open Tickets</a></li>
+            <li><a class="dropdown-item text-dark {% if request.GET.my == '1' %}active{% endif %}" href="{% url 'adminportal:tickets' %}?my=1"><i class="bi bi-person me-2 text-info"></i>My Tickets</a></li>
+            <li><a class="dropdown-item text-dark {% if request.GET.status == 'completed' %}active{% endif %}" href="{% url 'adminportal:tickets' %}?status=completed"><i class="bi bi-check-circle me-2 text-success"></i>Closed Tickets</a></li>
+            <li><a class="dropdown-item text-dark {% if request.GET.overdue == '1' %}active{% endif %}" href="{% url 'adminportal:tickets' %}?overdue=1"><i class="bi bi-exclamation-diamond me-2 text-danger"></i>Overdue Tickets</a></li>
+          </ul>
+        </li>
+
+        <li class="nav-item-header text-muted mt-3 mb-1">Communication</li>
+        <li class="nav-item mb-2">
+          <a href="{% url 'adminportal:messages' %}" class="nav-link text-dark {% if request.path == '/admin/messages/' %}active{% endif %}">
+            <i class="bi bi-chat-dots me-2"></i> <span class="link-text">Messages</span>
+          </a>
+        </li>
+        <li class="nav-item mb-2">
+          <a href="{% url 'adminportal:notifications' %}" class="nav-link text-dark {% if request.path == '/admin/notifications/' %}active{% endif %}">
+            <i class="bi bi-bell me-2"></i> <span class="link-text">Notifications</span>
+          </a>
+        </li>
+        <li class="nav-item mb-2">
+          <a href="{% url 'adminportal:emails' %}" class="nav-link text-dark {% if request.path == '/admin/emails/' %}active{% endif %}">
+            <i class="bi bi-envelope me-2"></i> <span class="link-text">Emails</span>
+          </a>
+        </li>
+
+        <li class="nav-item-header text-muted mt-3 mb-1">Settings</li>
+        <li class="nav-item mb-2">
+          <a href="{% url 'adminportal:settings' %}" class="nav-link text-dark {% if request.path == '/admin/settings/' %}active{% endif %}">
+            <i class="bi bi-gear me-2"></i> <span class="link-text">Settings</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Logout -->
+    <div class="mt-auto">
+      <a href="{% url 'logout' %}" class="nav-link text-dark">
+        <i class="bi bi-box-arrow-right me-2"></i> <span class="link-text">Logout</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-content w-100" id="mainContent">
+
+    <!-- Topbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm px-4 py-2 sticky-top">
+      <form class="d-flex position-relative me-auto w-50" method="get" action="{% url 'adminportal:clients' %}">
+        <input id="globalSearchInput" class="form-control w-100" type="search" name="q" placeholder="Search tickets, clients, employees..." autocomplete="off" value="{{ search_query }}">
+        <div id="searchDropdown" class="dropdown-menu shadow" style="width: 100%; max-height: 300px; overflow-y: auto; display: none; position: absolute; top: 100%; left: 0; z-index: 999;"></div>
+      </form>
+
+      <ul class="navbar-nav ms-auto">
+        <!-- Notification Dropdown -->
+        <li class="nav-item dropdown me-3">
+          <a class="nav-link position-relative" href="#" id="notificationDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-bell fs-5"></i>
+            {% if header_unread_count > 0 %}
+              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ header_unread_count }}</span>
+            {% endif %}
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="notificationDropdown" style="min-width: 320px;">
+            <li class="dropdown-header">Notifications</li>
+            {% for notif in header_notifications %}
+              <li>
+                <form method="post" action="{% url 'adminportal:mark_notification_read' notif.id %}" class="d-inline">{% csrf_token %}
+                  <button type="submit" class="dropdown-item {% if not notif.is_read %}notification-unread{% else %}notification-read{% endif %}">
+                    {{ notif.content|truncatechars:50 }}
+                  </button>
+                </form>
+              </li>
+            {% empty %}
+              <li><span class="dropdown-item text-muted">No notifications</span></li>
+            {% endfor %}
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-primary" href="{% url 'adminportal:notifications' %}">View all notifications</a></li>
+          </ul>
+        </li>
+
+        <!-- Messages Dropdown -->
+        <li class="nav-item dropdown me-3">
+          <a class="nav-link position-relative" href="#" id="messagesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-chat-dots fs-5"></i>
+            {% if header_messages and header_messages|length > 0 %}
+              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ header_messages|length }}</span>
+            {% endif %}
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="messagesDropdown" style="min-width: 320px;">
+            <li class="dropdown-header">Messages</li>
+            {% for msg in header_messages %}
+              <li>
+                <a class="dropdown-item" href="{% url 'adminportal:messages' %}">
+                  <span class="fw-bold">{{ msg.sender.username }}</span>: {{ msg.content|truncatechars:50 }}
+                  <br><small class="text-muted">{{ msg.created_at|date:'M d, H:i' }}</small>
+                </a>
+              </li>
+            {% empty %}
+              <li><span class="dropdown-item text-muted">No messages</span></li>
+            {% endfor %}
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-primary" href="{% url 'adminportal:messages' %}">View all messages</a></li>
+          </ul>
+        </li>
+
+        <!-- Emails Dropdown -->
+        <li class="nav-item dropdown me-3">
+          <a class="nav-link position-relative" href="#" id="emailsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-envelope fs-5"></i>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="emailsDropdown" style="min-width: 320px;">
+            <li class="dropdown-header">Emails</li>
+            <li><span class="dropdown-item text-muted">No email preview available</span></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-primary" href="{% url 'adminportal:emails' %}">View all emails</a></li>
+          </ul>
+        </li>
+
+        <!-- Profile Dropdown -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+            <div class="bg-primary text-white rounded-circle d-flex justify-content-center align-items-center" style="width: 32px; height: 32px;">
+              {{ request.user.username|slice:":1"|upper }}
+            </div>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end shadow">
+            <li class="dropdown-header text-center">
+              <strong>{{ request.user.username }}</strong><br>
+              <small class="text-muted">{{ request.user.email }}</small>
+            </li>
+            <li><hr class="dropdown-divider" /></li>
+            <li><a class="dropdown-item" href="{% url 'adminportal:profile_settings' %}"><i class="bi bi-person-circle me-2"></i>Profile Settings</a></li>
+            <li><a class="dropdown-item" href="{% url 'adminportal:settings' %}"><i class="bi bi-sliders me-2"></i>Settings</a></li>
+            <li><hr class="dropdown-divider" /></li>
+            <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+          </ul>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Main Content Block -->
+    <main class="p-4">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{% static 'js/admin.js' %}"></script>
+  <script>
+    // Auto-hide toast messages after 5 seconds
+    document.addEventListener('DOMContentLoaded', function() {
+      var toastMessages = document.querySelector('.toast-messages');
+      if (toastMessages) {
+        setTimeout(function() {
+          toastMessages.classList.add('hide');
+          toastMessages.addEventListener('transitionend', function() {
+            toastMessages.remove();
+          });
+        }, 5000);
+      }
+    });
+  </script>

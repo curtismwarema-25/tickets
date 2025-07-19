@@ -1,0 +1,14 @@
+<ul class="list-group mb-3">
+  {% for msg in messages %}
+    <li class="list-group-item {% if msg.sender == request.user %}list-group-item-primary{% else %}list-group-item-light{% endif %}">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <strong>{{ msg.sender.username }}</strong>: {{ msg.content }}
+        </div>
+        <small class="text-muted">{{ msg.created_at|date:"d M, Y H:i" }}</small>
+      </div>
+    </li>
+  {% empty %}
+    <li class="list-group-item text-muted">No messages yet.</li>
+  {% endfor %}
+</ul>

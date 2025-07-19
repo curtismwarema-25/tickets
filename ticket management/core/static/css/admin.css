@@ -1,0 +1,160 @@
+/* Notification read/unread styles */
+.notification-unread {
+  background-color: #e9f7ef;
+  color: #155724;
+  font-weight: bold;
+  border-left: 4px solid #28a745;
+}
+.notification-read {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  font-weight: normal;
+  border-left: 4px solid #adb5bd;
+}
+/* Sidebar collapsible styles */
+.sidebar {
+  width: 240px;
+  min-width: 240px;
+  background-color: #ffffff; /* Changed to white */
+  transition: width 0.3s ease;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  overflow-x: hidden;
+  z-index: 1000;
+}
+
+.sidebar.collapsed {
+  width: 70px;
+  min-width: 70px;
+}
+
+.sidebar .link-text {
+  display: inline;
+  transition: opacity 0.2s ease;
+}
+
+.sidebar.collapsed .link-text {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+}
+
+/* Main content shift when sidebar collapses */
+#mainContent {
+  margin-left: 240px;
+  transition: margin-left 0.3s ease;
+}
+
+#mainContent.collapsed {
+  margin-left: 70px;
+}
+
+#searchDropdown {
+  top: 100%;
+  left: 0;
+  right: 0;
+}
+
+
+/*messages*/
+ .alert.hide {
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  .toast-messages {
+  z-index: 1050;
+  max-width: 500px;
+}
+
+
+  .settings-sidebar {
+      width: 250px;
+      min-height: 100vh;
+      border-right: 1px solid #ddd;
+      background-color: #f8f9fa;
+    }
+
+    .settings-sidebar .nav-link.active {
+      background-color:#1f5d9b;
+      color: white;
+    }
+
+    .settings-sidebar .nav-link:hover {
+      background-color: #e2e6ea;
+    }
+.fw-bold .nav-link.active{
+  background-color: #212529;
+}
+
+/* --- Ticket Cards Styling for Tickets Page --- */
+.ticket-card {
+  border-radius: 12px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  min-height: 220px;
+  max-width: 370px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.ticket-card.status-pending {
+  border-left: 4px solid #0d6efd;
+}
+.ticket-card.status-completed {
+  border-left: 4px solid #198754;
+}
+.ticket-card.status-pending_approval {
+  border-left: 4px solid #ffc107;
+}
+.ticket-card.status-rejected {
+  border-left: 4px solid #dc3545;
+}
+.priority-high {
+  background-color: #fff1f0;
+}
+.priority-medium {
+  background-color: #f7faff;
+}
+.priority-low {
+  background-color: #f6fff7;
+}
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.avatar {
+  width:32px;
+  height:32px;
+  font-weight:600;
+  font-size:1rem;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+.badge {
+  font-size: 0.85rem;
+  padding: 0.4em 0.8em;
+}
+
+/* Sidebar dropdown fix for Tickets */
+.sidebar .dropdown-menu.position-static {
+  z-index: 1;
+  margin-bottom: 80px;
+}
+
+/* Prevent Tickets dropdown from closing on link click */
+.sidebar .dropdown-menu.position-static {
+  pointer-events: auto;
+}
+.sidebar .dropdown-menu.position-static .dropdown-item {
+  cursor: pointer;
+}
+
+/* Remove table hover effect (if any) */
+table tr:hover, .table-hover tbody tr:hover {
+  background-color: inherit !important;
+}

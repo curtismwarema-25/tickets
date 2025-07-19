@@ -1,0 +1,28 @@
+/* Overlay Fix for Profile Modals */
+.modal {
+  z-index: 1055 !important;
+}
+
+.modal-backdrop {
+  z-index: 1050 !important;
+}
+
+/* Header and dropdown fixes */
+.px-4.py-2.border-bottom {
+  position: relative;
+  z-index: 1040 !important;
+}
+
+.dropdown-menu {
+  z-index: 1045 !important;
+}
+
+/* Ensure sidebar and content are below modals */
+.sidebar, .content-wrapper, .main-content {
+  z-index: 1 !important;
+}
+
+/* Prevent modal from overlaying navbars or toasts */
+#flash-messages, #flash-toast {
+  z-index: 1200 !important;
+}

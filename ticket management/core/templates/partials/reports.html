@@ -1,0 +1,36 @@
+<h5>Reports & Analytics Settings</h5>
+<form method="post">
+  {% csrf_token %}
+
+  <div class="form-check mb-3">
+    <input class="form-check-input" type="checkbox" id="enableReports" name="enable_reports_dashboard">
+    <label class="form-check-label" for="enableReports">
+      Enable Reports Dashboard
+    </label>
+  </div>
+
+  <div class="form-check mb-3">
+    <input class="form-check-input" type="checkbox" id="exportData" name="allow_export">
+    <label class="form-check-label" for="exportData">
+      Allow Data Export (PDF, Excel)
+    </label>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Select Metrics to Track</label>
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" name="metrics" value="total_tickets" id="metricTotal">
+      <label class="form-check-label" for="metricTotal">Total Tickets</label>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" name="metrics" value="avg_resolution_time" id="metricAvgTime">
+      <label class="form-check-label" for="metricAvgTime">Average Resolution Time</label>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" name="metrics" value="completion_rate" id="metricCompletion">
+      <label class="form-check-label" for="metricCompletion">Completion Rate</label>
+    </div>
+  </div>
+
+  <button type="submit" class="btn btn-outline-primary mt-3">Save Reports Settings</button>
+</form>

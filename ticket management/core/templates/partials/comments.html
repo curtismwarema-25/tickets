@@ -1,0 +1,30 @@
+<h5>Ticket Comments / Logs Settings</h5>
+<form method="post">
+  {% csrf_token %}
+  
+  <div class="form-check mb-3">
+    <input class="form-check-input" type="checkbox" id="enableComments" name="enable_comments">
+    <label class="form-check-label" for="enableComments">Enable Ticket Commenting</label>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Allowed Roles to Comment</label>
+    <select class="form-select" name="comment_roles" multiple>
+      <option value="admin">Admin</option>
+      <option value="employee">Employee</option>
+    </select>
+    <small class="form-text text-muted">Hold Ctrl (Windows) or Cmd (Mac) to select multiple roles.</small>
+  </div>
+
+  <div class="mb-3">
+    <label for="maxLength" class="form-label">Maximum Comment Length (characters)</label>
+    <input type="number" class="form-control" id="maxLength" name="max_comment_length" min="50" max="1000" placeholder="Enter a value like 250">
+  </div>
+
+  <div class="form-check mb-3">
+    <input class="form-check-input" type="checkbox" id="showTimestamps" name="show_timestamps">
+    <label class="form-check-label" for="showTimestamps">Show Timestamps on Comments</label>
+  </div>
+
+  <button type="submit" class="btn btn-outline-primary">Save Comment Settings</button>
+</form>

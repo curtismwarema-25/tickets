@@ -1,0 +1,610 @@
+/* Notification read/unread styles */
+.notification-unread {
+  background-color: #e9f7ef;
+  color: #155724;
+  font-weight: bold;
+  border-left: 4px solid #28a745;
+}
+.notification-read {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  font-weight: normal;
+  border-left: 4px solid #adb5bd;
+}
+/* Sidebar collapsible styles */
+.sidebar {
+  width: 240px;
+  min-width: 240px;
+  background-color: #ffffff; /* Light background */
+  transition: width 0.3s ease;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  overflow-x: hidden;
+  z-index: 1000;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.05); /* Softer shadow for light theme */
+  padding-top: 1.5rem; /* Adjusted padding */
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar.collapsed {
+  width: 70px;
+  min-width: 70px;
+}
+
+.sidebar .link-text {
+  display: inline;
+  transition: opacity 0.2s ease;
+}
+
+.sidebar.collapsed .link-text {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+}
+
+/* Main content shift when sidebar collapses */
+#mainContent {
+  margin-left: 240px;
+  transition: margin-left 0.3s ease;
+}
+
+#mainContent.collapsed {
+  margin-left: 70px;
+}
+
+#searchDropdown {
+  top: 100%;
+  left: 0;
+  right: 0;
+}
+
+
+/*messages*/
+ .alert.hide {
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  .toast-messages {
+  z-index: 1050;
+  max-width: 500px;
+}
+
+
+  .settings-sidebar {
+      width: 250px;
+      min-height: 100vh;
+      border-right: 1px solid #ddd;
+      background-color: #f8f9fa;
+    }
+
+    .settings-sidebar .nav-link.active {
+      background-color:#1f5d9b;
+      color: white;
+    }
+
+    .settings-sidebar .nav-link:hover {
+      background-color: #e2e6ea;
+    }
+.fw-bold .nav-link.active{
+  background-color: #212529;
+}
+
+/* --- Ticket Cards Styling for Tickets Page --- */
+.ticket-card {
+  border-radius: 12px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  min-height: 220px;
+  max-width: 370px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.ticket-card.status-pending {
+  border-left: 4px solid #0d6efd;
+}
+.ticket-card.status-completed {
+  border-left: 4px solid #198754;
+}
+.ticket-card.status-pending_approval {
+  border-left: 4px solid #ffc107;
+}
+.ticket-card.status-rejected {
+  border-left: 4px solid #dc3545;
+}
+.priority-high {
+  background-color: #fff1f0;
+}
+.priority-medium {
+  background-color: #f7faff;
+}
+.priority-low {
+  background-color: #f6fff7;
+}
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.avatar {
+  width:32px;
+  height:32px;
+  font-weight:600;
+  font-size:1rem;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+.badge {
+  font-size: 0.85rem;
+  padding: 0.4em 0.8em;
+}
+
+/* Sidebar dropdown fix for Tickets */
+.sidebar .dropdown-menu.position-static {
+  z-index: 1;
+  margin-bottom: 80px;
+}
+
+/* Prevent Tickets dropdown from closing on link click */
+.sidebar .dropdown-menu.position-static {
+  pointer-events: auto;
+}
+.sidebar .dropdown-menu.position-static .dropdown-item {
+  cursor: pointer;
+}
+
+/* New styles for sidebar dropdown menu */
+.sidebar-dropdown-menu {
+  background-color: #ffffff !important; /* Light background for dropdown */
+  border-radius: 12px !important; /* Rounded corners for dropdown */
+  padding: 10px 0 !important; /* Padding inside dropdown */
+  box-shadow: 0 5px 20px rgba(0,0,0,0.1) !important; /* Softer shadow */
+}
+
+.sidebar-dropdown-menu .dropdown-item {
+  color: #495057 !important; /* Darker text for light dropdown */
+  padding: 12px 20px !important; /* Consistent padding with main links */
+  transition: background-color 0.3s ease, color 0.3s ease !important;
+  border-radius: 8px !important; /* Rounded corners for items */
+  margin: 0 10px !important; /* Horizontal margin for items */
+  width: calc(100% - 20px) !important; /* Adjust width for margin */
+}
+
+.sidebar-dropdown-menu .dropdown-item:hover {
+  background-color: #e9ecef !important; /* Light hover for dropdown items */
+  color: #007bff !important; /* Primary blue on hover */
+}
+
+.sidebar-dropdown-menu .dropdown-item.active {
+  background-color: #007bff !important; /* Primary blue for active */
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+.sidebar-dropdown-menu .dropdown-item i {
+  font-size: 1.1rem !important; /* Consistent icon size */
+  margin-right: 12px !important; /* Consistent icon spacing */
+}
+
+/* Remove table hover effect (if any) */
+table tr:hover, .table-hover tbody tr:hover {
+  background-color: inherit !important;
+}
+
+/* New styles for modern look */
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #f0f2f5; /* Lighter background */
+}
+
+.sidebar {
+  background-color: #ffffff; /* White background for the sidebar */
+  color: #2c3e50; /* Darker text for light sidebar */
+}
+
+.sidebar .nav-link {
+  color: #495057; /* Darker grey for default links */
+  font-weight: 500;
+  padding: 15px 25px; /* Increased padding for more visual weight */
+  border-radius: 12px; /* More rounded corners */
+  margin-bottom: 10px; /* Increased spacing */
+  transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+  display: flex;
+  align-items: center;
+}
+
+.sidebar .nav-link i {
+  font-size: 1.2rem; /* Slightly larger icons */
+  margin-right: 15px; /* More space between icon and text */
+}
+
+.sidebar .nav-link.active {
+  background-color: #e0e0e0; /* Light grey for active state */
+  font-weight: 600;
+  color: #007bff; /* Primary blue for active text/icon */
+  box-shadow: 0 5px 15px rgba(0, 123, 255, 0.1); /* Subtle shadow for active item */
+  transform: translateX(0); /* Remove slide effect for active to keep it static */
+}
+
+.sidebar .nav-link:hover {
+  background-color: #f8f9fa; /* Very light grey for hover */
+  color: #007bff; /* Primary blue on hover */
+  transform: translateX(8px); /* More pronounced slide effect on hover */
+}
+
+.sidebar-brand {
+  font-size: 2rem; /* Larger brand text */
+  font-weight: 800; /* Bolder brand text */
+  letter-spacing: 1.5px; /* Increased letter spacing */
+  text-transform: uppercase;
+  margin-bottom: 2.5rem; /* More space below the brand */
+  color: #2c3e50; /* Darker color for brand text */
+  padding-bottom: 1rem; /* Padding below brand */
+  border-bottom: 1px solid rgba(0,0,0,0.1); /* Subtle separator */
+}
+
+.sidebar .dropdown-menu {
+  background-color: #ffffff; /* White dropdown background */
+  border: none;
+}
+
+.sidebar .dropdown-item {
+  color: #495057; /* Darker text for light dropdown */
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.sidebar .dropdown-item:hover {
+  background-color: #e9ecef; /* Lighter hover for dropdown items */
+  color: #007bff; /* Primary blue on hover */
+}
+
+.navbar {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.form-control {
+  border-radius: 8px;
+  border-color: #e0e0e0;
+}
+
+.btn-outline-light {
+  border-color: #ecf0f1;
+  color: #ecf0f1;
+}
+
+.btn-outline-light:hover {
+  background-color: #ecf0f1;
+  color: #2c3e50;
+}
+
+.dropdown-menu {
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.dropdown-header {
+  font-weight: 600;
+  color: #7f8c8d;
+}
+
+.badge {
+  border-radius: 50px;
+  padding: 0.35em 0.65em;
+}
+
+.bg-primary {
+  background-color: #3498db !important;
+}
+
+.text-primary {
+  color: #3498db !important;
+}
+
+.text-success {
+  color: #2ecc71 !important;
+}
+
+.text-warning {
+  color: #f1c40f !important;
+}
+
+.text-danger {
+  color: #e74c3c !important;
+}
+
+.text-info {
+  color: #17a2b8 !important; /* A distinct cyan for info */
+}
+
+.toast-messages .alert {
+  border-radius: 8px;
+  border: none;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.toast-messages .alert-success {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.toast-messages .alert-danger {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.toast-messages .alert-warning {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.toast-messages .alert-info {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+/* Adjustments for specific elements */
+.sidebar .nav-link.active i {
+  color: #ffffff;
+}
+
+.sidebar .nav-link i {
+  color: #495057; /* Darker icon color for non-active */
+}
+
+.sidebar .nav-link.active .link-text {
+  font-weight: 600;
+}
+
+.sidebar .mb-4 h5 {
+  font-weight: 700;
+}
+
+.sidebar .mb-4 small {
+  color: #6c757d !important; /* Darker color for muted text */
+}
+
+.profile-dropdown .dropdown-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.profile-dropdown .dropdown-item {
+  padding: 10px 15px;
+}
+
+.profile-dropdown .dropdown-item:hover {
+  background-color: #e9ecef;
+}
+
+.profile-dropdown .dropdown-item i {
+  color: #7f8c8d;
+}
+
+.profile-dropdown .dropdown-item.text-danger i {
+  color: #e74c3c;
+}
+
+/* General card styling */
+.card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+}
+
+/* Table styling */
+.table {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+.table thead th {
+  background-color: #f8f9fa;
+  color: #495057;
+  font-weight: 600;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.table tbody tr:nth-of-type(even) {
+  background-color: #f8f9fa;
+}
+
+.table tbody tr:hover {
+  background-color: #e9ecef;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: #ffffff;
+}
+
+.table-striped tbody tr:nth-of-type(even) {
+  background-color: #f8f9fa;
+}
+
+/* Pagination styling */
+.pagination .page-item .page-link {
+  border-radius: 8px;
+  margin: 0 4px;
+  border: 1px solid #dee2e6;
+  color: #3498db;
+  transition: all 0.2s ease;
+}
+
+.pagination .page-item.active .page-link {
+  background-color: #3498db;
+  border-color: #3498db;
+  color: #ffffff;
+}
+
+.pagination .page-item .page-link:hover {
+  background-color: #e9ecef;
+  border-color: #e9ecef;
+  color: #2c3e50;
+}
+
+/* Form styling */
+.form-label {
+  font-weight: 500;
+  color: #34495e;
+}
+
+.form-control:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
+}
+
+.btn-primary {
+  background-color: #3498db;
+  border-color: #3498db;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: #217dbb;
+  border-color: #217dbb;
+}
+
+.btn-secondary {
+  background-color: #7f8c8d;
+  border-color: #7f8c8d;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background-color: #6c7a7b;
+  border-color: #6c7a7b;
+}
+
+.btn-outline-primary {
+  color: #3498db;
+  border-color: #3498db;
+}
+
+.btn-outline-primary:hover {
+  background-color: #3498db;
+  color: #ffffff;
+}
+
+/* Modal styling */
+.modal-content {
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.modal-header {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.modal-footer {
+  border-top: none;
+  padding-top: 0;
+}
+
+/* Specific adjustments for admin portal */
+.sidebar .nav-link.active {
+  background-color: #3498db; /* Ensure this matches the new primary color */
+}
+
+.sidebar .dropdown-menu.position-static {
+  background-color: #ffffff; /* Match sidebar background */
+}
+
+.sidebar .dropdown-item {
+  color: #495057; /* Ensure text is visible on light dropdown */
+}
+
+.sidebar .dropdown-item:hover {
+  background-color: #e9ecef; /* Lighter hover for dropdown items */
+}
+
+/* Adjustments for the search dropdown */
+#searchDropdown {
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  background-color: #ffffff;
+}
+
+#searchDropdown .dropdown-item {
+  padding: 10px 15px;
+  color: #34495e;
+}
+
+#searchDropdown .dropdown-item:hover {
+  background-color: #f8f9fa;
+}
+
+/* Profile dropdown specific styling */
+.navbar-nav .dropdown-toggle .rounded-circle {
+  background-color: #3498db !important; /* Ensure profile avatar matches primary color */
+}
+
+.navbar-nav .dropdown-menu .dropdown-header {
+  color: #2c3e50;
+}
+
+.navbar-nav .dropdown-menu .dropdown-item {
+  color: #34495e;
+}
+
+.navbar-nav .dropdown-menu .dropdown-item:hover {
+  background-color: #f8f9fa;
+}
+
+.navbar-nav .dropdown-menu .dropdown-item.text-danger {
+  color: #e74c3c;
+}
+
+.navbar-nav .dropdown-menu .dropdown-item.text-danger:hover {
+  background-color: #f8d7da;
+}
+
+/* Adjustments for toast messages */
+.toast-messages .alert {
+  font-size: 0.95rem;
+}
+
+/* Adjustments for ticket cards */
+.ticket-card {
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+}
+
+.ticket-card.status-pending {
+  border-left-color: #f1c40f; /* Warning yellow for pending */
+}
+.ticket-card.status-completed {
+  border-left-color: #2ecc71; /* Success green for completed */
+}
+.ticket-card.status-pending_approval {
+  border-left-color: #3498db; /* Primary blue for pending approval */
+}
+.ticket-card.status-rejected {
+  border-left-color: #e74c3c; /* Danger red for rejected */
+}
+
+.priority-high {
+  background-color: #fef2f2; /* Light red */
+}
+.priority-medium {
+  background-color: #fff8e1; /* Light yellow */
+}
+.priority-low {
+  background-color: #e8f5e9; /* Light green */
+}
+
+/* Ensure consistent font-family */
+h1, h2, h3, h4, h5, h6, .navbar, .sidebar, body {
+  font-family: 'Inter', sans-serif;
+}

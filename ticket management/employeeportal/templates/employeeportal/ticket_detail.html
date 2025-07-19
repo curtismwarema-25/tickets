@@ -1,0 +1,23 @@
+{% extends 'employeeportal/base.html' %}
+
+
+{% block content %}
+<div class="container mt-4">
+  <h3>Ticket Details</h3>
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title">{{ ticket.title }}</h5>
+      <p class="card-text"><strong>Description:</strong> {{ ticket.description }}</p>
+      <p class="card-text"><strong>Client:</strong> {{ ticket.client.name }}</p>
+      <p class="card-text"><strong>Status:</strong> {{ ticket.status }}</p>
+      <p class="card-text"><strong>Priority:</strong> {{ ticket.priority }}</p>
+      <p class="card-text"><strong>Created At:</strong> {{ ticket.created_at }}</p>
+      <p class="card-text"><strong>Deadline:</strong> {{ ticket.deadline }}</p>
+
+      {% if ticket.technician %}
+        <p class="card-text"><strong>Technician:</strong> {{ ticket.technician.email }}</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

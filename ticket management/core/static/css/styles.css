@@ -1,0 +1,179 @@
+/* General Body */
+body {
+  background-color: #f0f2f5; /* Lighter background */
+  font-family: 'Inter', sans-serif; /* Modern font */
+}
+
+/* Login Container */
+.login-container {
+  max-width: 400px;
+  margin: 80px auto;
+  padding: 30px;
+  background-color: #ffffff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+/* Sidebar */
+.sidebar {
+  height: 100vh;
+  background-color: #ffffff; /* Light background */
+  padding-top: 1.5rem;
+  position: fixed;
+  width: 240px;
+  border-right: 1px solid #e0e0e0;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar .nav-link {
+  color: #495057; /* Darker text for light sidebar */
+  font-weight: 500;
+  padding: 14px 20px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  display: flex;
+  align-items: center;
+}
+
+.sidebar .nav-link i {
+  font-size: 1.1rem;
+  margin-right: 12px;
+}
+
+.sidebar .nav-link.active {
+  background-color: #007bff; /* Primary blue for active state */
+  font-weight: 600;
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
+}
+
+.sidebar .nav-link:hover {
+  background-color: #e9ecef; /* Light hover for light sidebar */
+  color: #007bff; /* Primary blue on hover */
+}
+
+/* Content Area */
+.content-wrapper {
+  margin-left: 240px; /* Adjusted margin */
+}
+
+.main-content {
+  padding: 2rem;
+  margin-left: 0; /* Reset margin, handled by #mainContent in admin.css */
+}
+
+/* Cards */
+.card {
+  border: none; /* Removed default border */
+  border-radius: 12px; /* Rounded corners */
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08); /* Modern shadow */
+  transition: all 0.3s ease; /* Smooth transition for hover */
+  height: auto; /* Allow height to adjust */
+  font-size: 1rem; /* Default font size */
+  padding: 1rem; /* Default padding */
+}
+
+.card:hover {
+  transform: translateY(-5px); /* Lift effect on hover */
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12); /* Enhanced shadow on hover */
+}
+
+.card .card-title {
+  font-size: 1.5rem; /* Larger title */
+  font-weight: 600;
+  color: #2c3e50;
+}
+.card .card-text {
+  font-size: 1rem; /* Adjusted text size */
+  color: #34495e;
+}
+.card .card-footer {
+  padding: 1rem; /* Adjusted padding */
+  background-color: #f8f9fa;
+  border-top: 1px solid #e0e0e0;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  background-color: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05); /* Subtle shadow for header */
+}
+
+/*settings*/
+    .settings-sidebar {
+      width: 250px;
+      min-height: 100vh;
+      border-right: 1px solid #ddd;
+      background-color: #f8f9fa;
+    }
+
+    .settings-sidebar .nav-link.active {
+      background-color: #0d6efd;
+      color: white;
+    }
+
+    .settings-sidebar .nav-link:hover {
+      background-color: #e2e6ea;
+    }
+
+/* View Ticket Modal Styles */
+#viewTicketModal .modal-body h6 {
+  color: #333;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+#viewTicketModal .form-label {
+  color: #6c757d;
+  font-size: 0.875rem;
+  margin-bottom: 0.25rem;
+}
+
+#viewTicketModal .fw-medium {
+  font-weight: 500;
+  color: #333;
+}
+
+#viewTicketModal #view-description {
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+.modal-title {
+  font-size: 1.25rem; /* Slightly larger modal title */
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+#viewTicketModal .modal-content {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  border-radius: 12px; /* Rounded corners for modal */
+}
+
+/* Global styles for consistency */
+.btn {
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.form-control {
+  border-radius: 8px;
+}
+
+.badge {
+  border-radius: 50px;
+  padding: 0.35em 0.65em;
+}
+
+/* Ensure consistent font-family */
+h1, h2, h3, h4, h5, h6, .navbar, .sidebar, body {
+  font-family: 'Inter', sans-serif;
+}

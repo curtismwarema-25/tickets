@@ -1,0 +1,41 @@
+{% load static %}
+<h5>Email Notification Settings</h5>
+
+<form method="post">
+  {% csrf_token %}
+
+  <div class="form-check form-switch mb-3">
+    <input class="form-check-input" type="checkbox" id="enableEmail" name="enable_email"
+           {% if user.email_notifications_enabled %}checked{% endif %}>
+    <label class="form-check-label" for="enableEmail">Enable All Email Notifications</label>
+  </div>
+
+  <h6>Notify On:</h6>
+  <div class="form-check">
+    <input class="form-check-input" type="checkbox" id="notifyAssignment" name="notify_assignment"
+           {% if user.notify_on_assignment %}checked{% endif %}
+           {% if not user.email_notifications_enabled %}disabled{% endif %}>
+    <label class="form-check-label" for="notifyAssignment">Ticket Assignment</label>
+  </div>
+
+  <div class="form-check mb-3">
+    <input class="form-check-input" type="checkbox" id="notifyCompletion" name="notify_completion"
+           {% if user.notify_on_completion %}checked{% endif %}
+           {% if not user.email_notifications_enabled %}disabled{% endif %}>
+    <label class="form-check-label" for="notifyCompletion">Ticket Completion</label>
+  </div>
+
+  <button type="submit" class="btn btn-outline-primary">Save Changes</button>
+</form>
+
+<script>
+  const enableEmail = document.getElementById('enableEmail');
+  const notifyAssignment = document.getElementById('notifyAssignment');
+  const notifyCompletion = document.getElementById('notifyCompletion');
+
+  enableEmail.addEventListener('change', function () {
+    const isChecked = this.checked;
+    notifyAssignment.disabled = !isChecked;
+    notifyCompletion.disabled = !isChecked;
+  });
+</script>

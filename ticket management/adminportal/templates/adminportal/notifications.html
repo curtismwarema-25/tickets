@@ -1,0 +1,30 @@
+{% extends 'adminportal/base.html' %}
+{% block content %}
+<div class="container py-4">
+  <h3>Notifications</h3>
+  <div class="d-flex justify-content-end mb-2">
+    <form method="post" action="{% url 'adminportal:mark_all_notifications_read' %}">{% csrf_token %}
+      <button class="btn btn-outline-primary btn-sm">Mark all as read</button>
+    </form>
+    <form method="post" action="{% url 'adminportal:delete_all_notifications' %}">{% csrf_token %}
+      <button class="btn btn-outline-danger btn-sm ms-2">Delete all</button>
+    </form>
+  </div>
+  <ul class="list-group">
+    {% for notif in notifications %}
+      <li class="list-group-item d-flex justify-content-between align-items-center {% if not notif.is_read %}notification-unread{% else %}notification-read{% endif %}">
+        <form method="post" action="{% url 'adminportal:mark_notification_read' notif.id %}" class="d-inline">{% csrf_token %}
+          <button type="submit" class="btn btn-link text-decoration-none p-0">{{ notif.content }}</button>
+        </form>
+        <div>
+          <form method="post" action="{% url 'adminportal:delete_notification' notif.id %}" class="d-inline">{% csrf_token %}
+            <button class="btn btn-sm btn-link text-danger">Delete</button>
+          </form>
+        </div>
+      </li>
+    {% empty %}
+      <li class="list-group-item text-muted">No notifications</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

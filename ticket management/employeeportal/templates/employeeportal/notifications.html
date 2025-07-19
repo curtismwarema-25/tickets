@@ -1,0 +1,14 @@
+{% extends 'employeeportal/base.html' %}
+
+{% block content %}
+<h4>Notifications</h4>
+<ul class="list-group">
+  {% for n in notifications %}
+    <li class="list-group-item {% if not n.is_read %}list-group-item-warning{% endif %}">
+      {{ n.content }} <small class="text-muted float-end">{{ n.created_at }}</small>
+    </li>
+  {% empty %}
+    <li class="list-group-item">No notifications.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

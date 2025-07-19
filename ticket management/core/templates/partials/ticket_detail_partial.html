@@ -1,0 +1,42 @@
+<div>
+  <h5>{{ ticket.title }}</h5>
+  <p><strong>Description:</strong> {{ ticket.description }}</p>
+  <p><strong>Client:</strong> {{ ticket.client.name }}</p>
+  <p><strong>Status:</strong> {{ ticket.status }}</p>
+  <p><strong>Priority:</strong> {{ ticket.priority }}</p>
+  <p><strong>Deadline:</strong> {{ ticket.deadline }}</p>
+  <p><strong>Created:</strong> {{ ticket.created_at }}</p>
+
+  {% if ticket.status == 'completed' %}
+    <!-- ✅ Show static details if completed -->
+    <p><strong>Issue Description:</strong> {{ ticket.issue_description }}</p>
+    <p><strong>Solution:</strong> {{ ticket.solution }}</p>
+    {% if ticket.signoff_attachment %}
+      <p><strong>Sign-off File:</strong> {{ ticket.signoff_attachment }}</p>
+    {% endif %}
+
+  {% else %}
+    <!-- ✅ Show form if ticket is NOT completed -->
+    <form method="POST" enctype="multipart/form-data" id="completeTicketForm">
+      {% csrf_token %}
+      <input type="hidden" name="ticket_id" value="{{ ticket.id }}">
+
+      <div class="mb-3">
+        <label for="issue_description" class="form-label">Issue Description</label>
+        <textarea class="form-control" id="issue_description" name="issue_description" required></textarea>
+      </div>
+
+      <div class="mb-3">
+        <label for="solution" class="form-label">Solution</label>
+        <textarea class="form-control" id="solution" name="solution" required></textarea>
+      </div>
+
+      <div class="mb-3">
+        <label for="signoff_attachment" class="form-label">Sign-off File (optional)</label>
+        <input type="file" class="form-control" name="signoff_attachment" id="signoff_attachment">
+      </div>
+
+      <button type="submit" class="btn btn-success">Mark as Completed</button>
+    </form>
+  {% endif %}
+</div>
