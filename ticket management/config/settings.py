@@ -98,7 +98,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'mssql',  # use mssql-django
         'NAME': 'ticket_management',
-        'HOST': r'DESKTOP-T3TU8K5\SQLEXPRESS',
+        'HOST': r'DESKTOP-53P03TO\SQLEXPRESS',
         'USER': '',            # empty for Windows Auth
         'PASSWORD': '',
         'PORT': '',            # default SQL Server port

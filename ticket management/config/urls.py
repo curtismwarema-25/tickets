@@ -22,6 +22,7 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
+    
     path('', include('core.urls')),  # login/logout
     path('django-admin/', admin.site.urls),  # Django admin interface
     path('admin/', include(('adminportal.urls', 'adminportal'), namespace='adminportal')),

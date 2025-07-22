@@ -1,0 +1,5 @@
+Django<5.2.4
+django-crispy-forms
+crispy-bootstrap5
+mssql-django
+pillow
