@@ -96,18 +96,16 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'mssql',  # use mssql-django
+        'ENGINE': 'mssql',
         'NAME': 'ticket_management',
-        'HOST': r'DESKTOP-53P03TO\SQLEXPRESS',
-        'USER': '',            # empty for Windows Auth
-        'PASSWORD': '',
-        'PORT': '',            # default SQL Server port
+        'USER': 'sa',
+        'PASSWORD': '1212password',
+        'HOST': '192.168.0.59',
+        'PORT': '1433',
         'OPTIONS': {
             'driver': 'ODBC Driver 17 for SQL Server',
-            'trusted_connection': 'yes',          # Windows Authentication
-            'extra_params': 'TrustServerCertificate=yes;',
         },
-    },
+    }
 }
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
