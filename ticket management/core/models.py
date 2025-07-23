@@ -59,7 +59,7 @@ class User(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
 
-    
+    objects = UserManager() # Add this line
 
     def __str__(self):
         return f"{self.email} ({self.role})"
@@ -194,4 +194,3 @@ class SystemSetting(models.Model):
 
     def __str__(self):
         return self.system_name
-

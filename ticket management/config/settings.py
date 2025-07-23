@@ -25,7 +25,8 @@ SECRET_KEY = 'django-insecure-2hx2^%wk^^)cpf0$j21gm0qmrd3ct1(vl5*p%&kx-um-ect!+0
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1']
+CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000']
 
 
 # Application definition
@@ -96,16 +97,18 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'mssql',
+        'ENGINE': 'mssql',  # use mssql-django
         'NAME': 'ticket_management',
-        'USER': 'sa',
-        'PASSWORD': '1212password',
-        'HOST': '192.168.0.59',
-        'PORT': '1433',
+        'HOST': r'DESKTOP-T3TU8K5\SQLEXPRESS',
+        'USER': '',            # empty for Windows Auth
+        'PASSWORD': '',
+        'PORT': '',            # default SQL Server port
         'OPTIONS': {
             'driver': 'ODBC Driver 17 for SQL Server',
+            'trusted_connection': 'yes',          # Windows Authentication
+            'extra_params': 'TrustServerCertificate=yes;',
         },
-    }
+    },
 }
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -151,3 +154,5 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend']
